@@ -1,0 +1,16 @@
+{
+  "name": "crediscore",
+  "version": "1.0.0",
+  "description": "Beneficiary Credit Scoring with Income Verification Layer for Direct Digital Lending",
+  "main": "index.js",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
