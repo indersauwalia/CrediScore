@@ -76,7 +76,7 @@ export default function Home() {
                                 Know Before You Apply
                             </h2>
                             <p className="text-base sm:text-lg md:text-xl text-gray-600">
-                                We don’t reject applications blindly. First check your real
+                                We don't reject applications blindly. First check your real
                                 income-based CrediScore. Only eligible users are invited to apply —
                                 saving your time and improving approval chances.
                             </p>
@@ -88,7 +88,7 @@ export default function Home() {
                                     "We verify income → Approve & transfer money",
                                 ].map((text, i) => (
                                     <div key={i} className="flex items-start gap-3 sm:gap-4">
-                                        <FaCircleCheck className="text-2xl sm:text-3xl text-green-600 mt-1 flex-shrink-0" />
+                                        <FaCircleCheck className="text-2xl sm:text-3xl text-green-600 mt-1 shrink-0" />
                                         <div>
                                             <strong>Step {i + 1}:</strong> {text}
                                         </div>
@@ -223,11 +223,11 @@ export default function Home() {
                 <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6">
                     Need Money Right Now?
                 </h2>
-                <p className="text-xl sm:text-2xl mb-10 opacity-90">
+                {/* <p className="text-xl sm:text-2xl mb-10 opacity-90">
                     Join 50,000+ users who got instant loans
-                </p>
+                </p> */}
                 <button className="bg-white text-blue-700 px-10 sm:px-12 py-5 sm:py-6 rounded-2xl text-xl sm:text-2xl font-bold shadow-2xl hover:scale-105 transition">
-                    Apply in 2 Minutes →
+                    Apply Now →
                 </button>
                 <p className="mt-6 text-lg opacity-80">
                     Zero processing fee • No credit score needed
