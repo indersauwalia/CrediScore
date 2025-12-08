@@ -1,5 +1,6 @@
 // pages/Signup.jsx
 import React, { useState } from "react";
+import { NavLink } from "react-router";
 import { GiReceiveMoney } from "react-icons/gi";
 import { FcGoogle } from "react-icons/fc";
 import { MdEmail, MdPhone, MdLockOutline, MdPerson, MdCake } from "react-icons/md";
@@ -208,12 +209,12 @@ export default function Signup() {
 
                             <p className="text-center text-xs text-gray-500">
                                 Already have an account?{" "}
-                                <a
-                                    href="/login"
+                                <NavLink
+                                    to="/login"
                                     className="text-blue-600 font-bold hover:underline"
                                 >
                                     Login
-                                </a>
+                                </NavLink>
                             </p>
 
                             <p className="text-center text-xs text-gray-400">

@@ -4,6 +4,7 @@ import { FaCircleCheck, FaBrain } from "react-icons/fa6";
 import { FaFileAlt } from "react-icons/fa";
 import { MdSecurity, MdSwapHoriz } from "react-icons/md";
 import LoanImgHomepage from "../assets/LoanImgHomepage.png";
+import { NavLink } from "react-router";
 
 export default function Home() {
     return (
@@ -20,12 +21,15 @@ export default function Home() {
                         </h1>
                     </div>
                     <div className="flex gap-3 sm:gap-4 text-sm sm:text-base">
-                        <button className="max-sm:hidden text-gray-700 font-medium hover:text-blue-600 transition">
+                        <NavLink
+                            to="/login"
+                            className="py-3 text-center max-sm:hidden text-gray-700 font-medium hover:text-blue-600 transition"
+                        >
                             Login
-                        </button>
-                        <button className="bg-linear-to-r from-blue-600 to-blue-700 text-white px-4 sm:px-8 py-2 sm:py-3 rounded-full font-semibold hover:shadow-lg hover:scale-105 transition text-sm sm:text-base">
+                        </NavLink>
+                        <NavLink to="/signup" className="bg-linear-to-r from-blue-600 to-blue-700 text-white px-4 sm:px-8 py-2 sm:py-3 rounded-full font-semibold hover:shadow-lg hover:scale-105 transition text-sm sm:text-base">
                             Get Started
-                        </button>
+                        </NavLink>
                     </div>
                 </div>
             </nav>
@@ -47,9 +51,9 @@ export default function Home() {
                         and approve loans in <strong>under 5 minutes</strong>.
                     </p>
                     <div className="mt-8 sm:mt-10">
-                        <button className="bg-linear-to-r from-blue-600 to-blue-700 text-white px-10 sm:px-12 py-4 sm:py-5 rounded-2xl text-lg sm:text-xl font-bold shadow-2xl hover:shadow-blue-500/30 hover:scale-105 transition">
+                        <NavLink to="/signup" className="bg-linear-to-r from-blue-600 to-blue-700 text-white px-10 sm:px-12 py-4 sm:py-5 rounded-2xl text-lg sm:text-xl font-bold shadow-2xl hover:shadow-blue-500/30 hover:scale-105 transition">
                             Apply Now → Free
-                        </button>
+                        </NavLink>
                     </div>
                     <p className="mt-8 sm:mt-12 text-base sm:text-lg text-gray-600 flex flex-wrap justify-center gap-x-6 gap-y-2">
                         <span className="flex items-center gap-2">
@@ -96,9 +100,9 @@ export default function Home() {
                                 ))}
                             </div>
 
-                            <button className="mt-6 bg-linear-to-r from-blue-600 to-blue-700 text-white px-8 sm:px-10 py-4 sm:py-5 rounded-2xl text-lg sm:text-xl font-bold shadow-xl hover:scale-105 transition">
+                            <NavLink to="/signup" className="mt-6 bg-linear-to-r from-blue-600 to-blue-700 text-white px-8 sm:px-10 py-4 sm:py-5 rounded-2xl text-lg sm:text-xl font-bold shadow-xl hover:scale-105 transition">
                                 Check Eligibility Now
-                            </button>
+                            </NavLink>
                         </div>
 
                         {/* Single Image - Responsive */}
@@ -220,15 +224,15 @@ export default function Home() {
 
             {/* FINAL CTA */}
             <section className="py-20 sm:py-24 px-6 bg-linear-to-r from-blue-700 to-green-600 text-white text-center">
-                <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6">
+                <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-15">
                     Need Money Right Now?
                 </h2>
                 {/* <p className="text-xl sm:text-2xl mb-10 opacity-90">
                     Join 50,000+ users who got instant loans
                 </p> */}
-                <button className="bg-white text-blue-700 px-10 sm:px-12 py-5 sm:py-6 rounded-2xl text-xl sm:text-2xl font-bold shadow-2xl hover:scale-105 transition">
+                <NavLink to="/signup" className="bg-white text-blue-700 px-10 sm:px-12 py-5 sm:py-6 rounded-2xl text-xl sm:text-2xl font-bold shadow-2xl hover:scale-105 transition">
                     Apply Now →
-                </button>
+                </NavLink>
                 <p className="mt-6 text-lg opacity-80">
                     Zero processing fee • No credit score needed
                 </p>
