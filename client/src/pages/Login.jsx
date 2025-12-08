@@ -79,7 +79,7 @@ export default function Login() {
                             {method === "phone" ? (
                                 <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600">
                                     <span className="px-4 py-4 bg-gray-50 flex items-center gap-2">
-                                        <MdPhone /> +91
+                                        <MdPhone />
                                     </span>
                                     <input
                                         type="tel"
