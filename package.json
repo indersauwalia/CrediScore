@@ -12,5 +12,9 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "lucide-react": "^0.556.0",
+    "react-chartjs-2": "^5.3.1"
+  }
 }
