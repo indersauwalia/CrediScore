@@ -114,8 +114,8 @@ export default function Signup() {
                             </div>
 
                             {/* Phone or Email + Password */}
-                            {method === "phone" ? (
-                                <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600">
+                            {/* {( */}
+                                {/* <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600">
                                     <span className="px-4 py-4 bg-gray-50 flex items-center gap-2">
                                         <MdPhone />
                                     </span>
@@ -129,8 +129,8 @@ export default function Signup() {
                                         className="w-full px-4 py-4 outline-none"
                                         maxLength={10}
                                     />
-                                </div>
-                            ) : (
+                                </div> */}
+                            {/* ) : ( */}
                                 <div className="space-y-4">
                                     <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600">
                                         <span className="px-4 py-4 bg-gray-50 flex items-center">
@@ -157,7 +157,7 @@ export default function Signup() {
                                         />
                                     </div>
                                 </div>
-                            )}
+                            {/* )} */}
 
                             {/* Create Account Button */}
                             <button
@@ -173,7 +173,7 @@ export default function Signup() {
 
                             {/* Method Switch */}
                             <div className="space-y-3">
-                                <button
+                                {/* <button
                                     onClick={() => {
                                         setMethod("phone");
                                         setEmail("");
@@ -186,9 +186,9 @@ export default function Signup() {
                                     }`}
                                 >
                                     <MdPhone /> Sign up with Phone
-                                </button>
+                                </button> */}
 
-                                <button
+                                {/* <button
                                     onClick={() => {
                                         setMethod("email");
                                         setPhone("");
@@ -200,7 +200,7 @@ export default function Signup() {
                                     }`}
                                 >
                                     <MdEmail /> Sign up with Email
-                                </button>
+                                </button> */}
 
                                 <button className="w-full py-3 rounded-xl border border-gray-300 hover:border-blue-600 hover:bg-blue-50 transition flex items-center justify-center gap-2 text-sm">
                                     <FcGoogle className="text-xl" /> Continue with Google

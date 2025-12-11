@@ -60,7 +60,7 @@ export default function Login() {
                             <img
                                 src={LoanImgLoginpage}
                                 alt="CrediScore"
-                                className="w-full max-w-[220px] mx-auto rounded-2xl shadow-2xl border-4 border-white/30"
+                                className="w-full mx-auto rounded-2xl shadow-2xl border-4 border-white/30"
                             />
                         </div>
                     </div>
@@ -77,7 +77,7 @@ export default function Login() {
                                 </p>
                             </div>
 
-                            {method === "phone" ? (
+                            {/* {(
                                 <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600">
                                     <span className="px-4 py-4 bg-gray-50 flex items-center gap-2">
                                         <MdPhone />
@@ -93,7 +93,7 @@ export default function Login() {
                                         maxLength={10}
                                     />
                                 </div>
-                            ) : (
+                            ) : ( */}
                                 <div className="space-y-4">
                                     <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600">
                                         <span className="px-4 py-4 bg-gray-50 flex items-center">
@@ -120,7 +120,7 @@ export default function Login() {
                                         />
                                     </div>
                                 </div>
-                            )}
+                            {/* )} */}
 
                             <button
                                 disabled={!isValid}
@@ -130,11 +130,11 @@ export default function Login() {
                                         : "bg-gray-200 text-gray-500 cursor-not-allowed"
                                 }`}
                             >
-                                {method === "phone" ? "Continue with Phone" : "Login with Email"}
+                                Login
                             </button>
 
                             <div className="space-y-3">
-                                <button
+                                {/* <button
                                     onClick={() => {
                                         setMethod("phone");
                                         setEmail("");
@@ -147,9 +147,9 @@ export default function Login() {
                                     }`}
                                 >
                                     <MdPhone /> Use Phone Number
-                                </button>
+                                </button> */}
 
-                                <button
+                                {/* <button
                                     onClick={() => {
                                         setMethod("email");
                                         setPhone("");
@@ -161,7 +161,7 @@ export default function Login() {
                                     }`}
                                 >
                                     <MdEmail /> Use Email & Password
-                                </button>
+                                </button> */}
 
                                 <button className="w-full py-3 rounded-xl border border-gray-300 hover:border-blue-600 hover:bg-blue-50 transition flex items-center justify-center gap-2 text-sm">
                                     <FcGoogle className="text-xl" /> Continue with Google
