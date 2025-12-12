@@ -1,0 +1,5 @@
+[
+  { "id": 101, "pan": "ABCDE1234F", "salary": 30000, "existing_loans": [], "age": 28 },
+  { "id": 102, "pan": "PQRSX5678Y", "salary": 50000, "existing_loans": [20000], "age": 35 },
+  { "id": 103, "pan": "LMNOP9876Z", "salary": 25000, "existing_loans": [], "age": 30 }
+]
