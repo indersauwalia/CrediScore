@@ -1,30 +1,34 @@
 // pages/Dashboard.jsx
-import React, { useContext, useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router";
-import { GiReceiveMoney, GiTrophy, GiShield } from "react-icons/gi";
+import { GiReceiveMoney, GiTrophy } from "react-icons/gi";
 import { FaArrowTrendUp } from "react-icons/fa6";
-import { MdAccountBalanceWallet, MdHistory, MdCreditScore, MdArrowForward } from "react-icons/md";
+import {
+    MdAccountBalanceWallet,
+    MdHistory,
+    MdCreditScore,
+    MdArrowForward,
+    MdVerified,
+    MdWarning,
+} from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Dashboard() {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    // Redirect to home if not logged in
     useEffect(() => {
         if (!user) {
             navigate("/", { replace: true });
         }
     }, [user, navigate]);
 
-    if (!user) {
-        return null; // Or a loading spinner while redirecting
-    }
+    if (!user) return null;
 
     const crediScore = user.crediScore || 0;
     const hasCreditScore = crediScore > 0;
+    const verificationStatus = user.verificationStatus || "not-started";
 
-    // Dynamic calculations
     const getAvailableCredit = () => {
         if (crediScore >= 750) return "₹2,50,000";
         if (crediScore >= 700) return "₹2,00,000";
@@ -33,30 +37,25 @@ export default function Dashboard() {
         return "₹50,000";
     };
 
-    const getEligibilityMessage = () => {
-        if (crediScore >= 700) return "Excellent! You're pre-approved for premium loans";
-        if (crediScore >= 650) return "Great! Eligible for instant digital loans";
-        if (crediScore >= 600) return "Good! You qualify for standard loans";
-        return "Complete your profile to unlock loan eligibility";
-    };
-
-    const getScoreLabel = () => {
-        if (crediScore >= 700) return "Excellent";
-        if (crediScore >= 650) return "Very Good";
-        if (crediScore >= 600) return "Good";
-        return "Build Your Score";
-    };
-
     const getScoreColor = () => {
-        if (crediScore >= 700) return "from-green-500 to-emerald-600";
+        if (crediScore >= 750) return "from-green-500 to-emerald-600";
+        if (crediScore >= 700) return "from-emerald-500 to-teal-600";
         if (crediScore >= 650) return "from-blue-500 to-cyan-600";
-        if (crediScore >= 600) return "from-yellow-500 to-orange-600";
+        if (crediScore >= 600) return "from-yellow-500 to-amber-600";
         return "from-gray-400 to-gray-600";
     };
 
+    const getScoreLabel = () => {
+        if (crediScore >= 750) return "Excellent";
+        if (crediScore >= 700) return "Very Good";
+        if (crediScore >= 650) return "Good";
+        if (crediScore >= 600) return "Fair";
+        return "Build Your Score";
+    };
+
     const handleLogout = () => {
-        logout(); // This already removes token, sets user null, navigates to /login
-        navigate("/", { replace: true }); // Force redirect to home
+        logout();
+        navigate("/", { replace: true });
     };
 
     return (
@@ -102,10 +101,16 @@ export default function Dashboard() {
                                         </h2>
                                         <div className="text-7xl font-extrabold">{crediScore}</div>
                                         <p className="text-2xl mt-3 opacity-95">
-                                            {getScoreLabel()} • Income Verified Scoring
+                                            {getScoreLabel()} •{" "}
+                                            {verificationStatus === "approved"
+                                                ? "Income Verified"
+                                                : "Basic Scoring"}
                                         </p>
                                         <p className="text-lg mt-2 opacity-90">
-                                            {getEligibilityMessage()}
+                                            Available Limit:{" "}
+                                            <span className="font-bold">
+                                                {getAvailableCredit()}
+                                            </span>
                                         </p>
                                     </div>
                                     <div className="text-center">
@@ -115,6 +120,87 @@ export default function Dashboard() {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+
+                            {/* Verification Status Banner */}
+                            <div className="mb-8">
+                                {verificationStatus === "pending" && (
+                                    <div className="bg-orange-50 border-2 border-orange-300 rounded-2xl p-6 flex items-center justify-between shadow-lg">
+                                        <div className="flex items-center gap-4">
+                                            <MdWarning className="text-5xl text-orange-600" />
+                                            <div>
+                                                <h3 className="text-2xl font-bold text-orange-800">
+                                                    Income Verification Pending
+                                                </h3>
+                                                <p className="text-lg text-orange-700 mt-1">
+                                                    Your verification is under review. You'll be
+                                                    notified once approved.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {verificationStatus === "approved" && (
+                                    <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-6 flex items-center justify-between shadow-lg">
+                                        <div className="flex items-center gap-4">
+                                            <MdVerified className="text-5xl text-green-600" />
+                                            <div>
+                                                <h3 className="text-2xl font-bold text-green-800">
+                                                    Income Verified
+                                                </h3>
+                                                <p className="text-lg text-green-700 mt-1">
+                                                    Your income has been successfully verified.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {verificationStatus === "not-started" && (
+                                    <div className="bg-orange-50 border-2 border-orange-300 rounded-2xl p-6 flex items-center justify-between shadow-lg">
+                                        <div className="flex items-center gap-4">
+                                            <MdWarning className="text-5xl text-orange-600" />
+                                            <div>
+                                                <h3 className="text-2xl font-bold text-orange-800">
+                                                    Complete Income Verification
+                                                </h3>
+                                                <p className="text-lg text-orange-700 mt-1">
+                                                    Verify your income to unlock higher credit
+                                                    limits and better scoring.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <NavLink to="/income-verification">
+                                            <button className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-md transition flex items-center gap-3">
+                                                Verify Income Now
+                                                <MdArrowForward className="text-2xl" />
+                                            </button>
+                                        </NavLink>
+                                    </div>
+                                )}
+
+                                {verificationStatus === "rejected" && (
+                                    <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-6 flex items-center justify-between shadow-lg">
+                                        <div className="flex items-center gap-4">
+                                            <MdError className="text-5xl text-red-600" />
+                                            <div>
+                                                <h3 className="text-2xl font-bold text-red-800">
+                                                    Verification Rejected
+                                                </h3>
+                                                <p className="text-lg text-red-700 mt-1">
+                                                    Your submitted documents were not approved.
+                                                    Please try again.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <NavLink to="/income-verification">
+                                            <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-md transition">
+                                                Re-submit Verification
+                                            </button>
+                                        </NavLink>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Stats Grid */}
@@ -132,7 +218,6 @@ export default function Dashboard() {
                                         <MdAccountBalanceWallet className="text-6xl text-blue-600 opacity-80" />
                                     </div>
                                 </div>
-
                                 <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
                                     <div className="flex items-center justify-between">
                                         <div>
@@ -146,7 +231,6 @@ export default function Dashboard() {
                                         <FaArrowTrendUp className="text-6xl text-green-600 opacity-80" />
                                     </div>
                                 </div>
-
                                 <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
                                     <div className="flex items-center justify-between">
                                         <div>
@@ -155,7 +239,6 @@ export default function Dashboard() {
                                                 Apply for Loan
                                             </p>
                                         </div>
-                                        <GiShield className="text-6xl text-purple-600 opacity-80" />
                                     </div>
                                 </div>
                             </div>
@@ -191,20 +274,6 @@ export default function Dashboard() {
                                         </div>
                                         <p className="text-sm text-gray-500">Just now</p>
                                     </div>
-                                    <div className="flex items-center gap-6 py-4 border-b border-gray-100">
-                                        <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                                            <GiTrophy className="text-2xl text-green-600" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-lg font-medium text-gray-800">
-                                                CrediScore Generated
-                                            </p>
-                                            <p className="text-gray-500">
-                                                Score: {crediScore} ({getScoreLabel()})
-                                            </p>
-                                        </div>
-                                        <p className="text-sm text-gray-500">Today</p>
-                                    </div>
                                     <div className="flex items-center gap-6 py-4">
                                         <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
                                             <MdAccountBalanceWallet className="text-2xl text-blue-600" />
@@ -223,7 +292,7 @@ export default function Dashboard() {
                             </div>
                         </>
                     ) : (
-                        /* No Score Yet - Prompt */
+                        /* No Score Yet */
                         <div className="text-center py-32">
                             <div className="max-w-3xl mx-auto">
                                 <MdCreditScore className="text-9xl text-gray-300 mx-auto mb-10" />

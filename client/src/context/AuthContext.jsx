@@ -12,8 +12,6 @@ export const AuthProvider = ({ children }) => {
 
     const loadUser = async () => {
         const token = localStorage.getItem("token");
-        console.log("🔑 Token exists:", !!token);
-
         if (!token) {
             setUser(null);
             setLoading(false);
@@ -22,8 +20,7 @@ export const AuthProvider = ({ children }) => {
 
         try {
             const res = await api.get("/auth/me");
-            console.log("User loaded:", res.data);
-            setUser(res.data);
+            setUser(res.data); // Contains user fields + income (with monthlyIncome, crediScore, etc.)
         } catch (err) {
             console.error("Failed to load user:", err.response?.data || err.message);
             localStorage.removeItem("token");
@@ -36,6 +33,11 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         loadUser();
     }, []);
+
+    const refreshUser = async () => {
+        setLoading(true);
+        await loadUser();
+    };
 
     const signup = async (userData) => {
         try {
@@ -68,10 +70,13 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, signup, login, logout }}>
+        <AuthContext.Provider value={{ user, loading, signup, login, logout, refreshUser }}>
             {loading ? (
                 <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-green-50">
-                    <p className="text-xl">Loading...</p>
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mx-auto mb-4"></div>
+                        <p className="text-xl text-gray-700">Loading your profile...</p>
+                    </div>
                 </div>
             ) : (
                 children

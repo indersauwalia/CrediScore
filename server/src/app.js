@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth.js";
 import creditRoutes from "./routes/credit.js";
+import verificationRouter from "./routes/verification.js";
 
 const app = express();
 
@@ -16,6 +17,8 @@ app.use(express.json({ limit: "10mb" }));
 app.use("/api/auth", authRoutes);
 
 app.use("/api/credit", creditRoutes);
+
+app.use("/api", verificationRouter);
 
 // Health check route
 app.get("/", (req, res) => {

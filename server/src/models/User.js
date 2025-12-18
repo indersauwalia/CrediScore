@@ -19,13 +19,20 @@ const UserSchema = new mongoose.Schema(
             match: [/^\S+@\S+\.\S+$/, "Please enter a valid email"],
         },
         password: { type: String, required: true, minlength: 6 },
-        aadhaar: { type: String, unique: true, sparse: true }, // Optional until profile
-        pan: { type: String, unique: true, sparse: true },
+
+        // Personal details
         gender: { type: String },
         maritalStatus: { type: String },
         educationLevel: { type: String },
-        crediScore: { type: Number, default: 0 }, // Will update from Profile
-        incomeVerified: { type: Boolean, default: false },
+
+        // Scoring & Verification Status (Single source of truth)
+        crediScore: { type: Number, default: 0 },
+        verificationStatus: {
+            type: String,
+            enum: ["pending", "approved", "rejected"],
+            default: "pending",
+        },
+        adminNote: { type: String }, // Optional note from admin
     },
     { timestamps: true }
 );

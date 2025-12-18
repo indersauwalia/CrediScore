@@ -1,13 +1,15 @@
 // pages/CreditScoreForm.jsx
-import React, { useState, useContext } from "react";
-import { NavLink } from "react-router";
-import { MdWork, MdPerson, MdCreditCard, MdAttachMoney, MdArrowBack } from "react-icons/md";
+import React, { useState, useContext, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router";
+import { MdWork, MdPerson, MdCreditCard, MdArrowBack } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
 import api from "../utils/api";
 
 export default function CreditScoreForm() {
-    const { logout } = useContext(AuthContext);
+    const { user, logout, refreshUser } = useContext(AuthContext);
+    const navigate = useNavigate();
 
+    // Form state
     const [monthlyIncome, setMonthlyIncome] = useState("");
     const [monthlyExpense, setMonthlyExpense] = useState("");
     const [employmentType, setEmploymentType] = useState("salaried");
@@ -21,11 +23,14 @@ export default function CreditScoreForm() {
     const [residenceType, setResidenceType] = useState("");
     const [existingEmi, setExistingEmi] = useState("");
     const [creditCardSpend, setCreditCardSpend] = useState("");
-    const [aadhaar, setAadhaar] = useState("");
-    const [pan, setPan] = useState("");
+
+    // UI state
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
+    const [hasIncomeProfile, setHasIncomeProfile] = useState(false);
+    const [currentScore, setCurrentScore] = useState(null);
 
+    // Form validation
     const isValid =
         monthlyIncome > 0 &&
         monthlyExpense >= 0 &&
@@ -34,15 +39,38 @@ export default function CreditScoreForm() {
         educationLevel &&
         gender &&
         maritalStatus &&
-        dependents &&
+        dependents >= 0 &&
         residenceType &&
-        existingEmi >= 0 &&
-        aadhaar.length === 12 &&
-        pan.length === 10;
+        existingEmi >= 0;
+
+    // Pre-fill from user.income
+    useEffect(() => {
+        if (!user) return;
+        const income = user.income;
+
+        if (income) {
+            setHasIncomeProfile(true);
+            setCurrentScore(income.crediScore || null);
+            setMonthlyIncome(income.monthlyIncome?.toString() || "");
+            setMonthlyExpense(income.monthlyExpense?.toString() || "");
+            setEmploymentType(income.employmentType || "salaried");
+            setDesignation(income.designation || "");
+            setTotalExpYears(income.totalExpYears?.toString() || "");
+            setCurrentExpYears(income.currentExpYears?.toString() || "");
+            setDependents(income.dependents?.toString() || "");
+            setResidenceType(income.residenceType || "");
+            setExistingEmi(income.existingEmi?.toString() || "");
+            setCreditCardSpend(income.creditCardSpend?.toString() || "");
+        }
+
+        // Personal fields
+        setGender(user.gender || "");
+        setMaritalStatus(user.maritalStatus || "");
+        setEducationLevel(user.educationLevel || "");
+    }, [user]);
 
     const handleSubmit = async () => {
         if (!isValid || loading) return;
-
         setLoading(true);
         setMessage("");
 
@@ -53,25 +81,40 @@ export default function CreditScoreForm() {
             designation,
             totalExpYears: Number(totalExpYears),
             currentExpYears: Number(currentExpYears),
-            educationLevel,
-            gender,
-            maritalStatus,
-            dependents: Number(dependents),
+            dependents: Number(dependents || 0),
             residenceType,
             existingEmi: Number(existingEmi),
             creditCardSpend: Number(creditCardSpend || 0),
-            aadhaar,
-            pan,
+            educationLevel,
+            gender,
+            maritalStatus,
         };
 
         try {
-            const res = await api.post("/credit/submit-profile", data);
-            setMessage(`Success! Profile updated. New CrediScore: ${res.data.crediScore}`);
+            const res = await api.post("/credit/submit-income", data);
+            setHasIncomeProfile(true);
+            setCurrentScore(res.data.crediScore);
+            setMessage(
+                `Success! Profile ${hasIncomeProfile ? "updated" : "created"}. New CrediScore: ${
+                    res.data.crediScore
+                }`
+            );
+            if (refreshUser) await refreshUser();
+            setTimeout(() => navigate("/dashboard"), 2000);
         } catch (err) {
-            setMessage(`${err.response?.data?.msg || "Submission failed."}`);
+            setMessage(err.response?.data?.msg || "Submission failed. Please try again.");
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
+
+    if (!user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-green-50">
+                <p className="text-xl text-gray-700">Loading your profile...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-8 px-4">
@@ -93,16 +136,27 @@ export default function CreditScoreForm() {
                     </button>
                 </div>
 
-                {/* Form Card */}
+                {/* Main Form Card */}
                 <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12">
                     <div className="text-center mb-10">
                         <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800">
-                            Complete Your Credit Profile
+                            {hasIncomeProfile
+                                ? "Update Your Income Profile"
+                                : "Complete Your Income Profile"}
                         </h1>
                         <p className="text-lg text-gray-600 mt-3">
-                            Accurate financial details = Stronger CrediScore for instant lending
+                            {hasIncomeProfile
+                                ? "Keep your details up-to-date for the most accurate CrediScore"
+                                : "Share your financial details to calculate your income-based CrediScore"}
                         </p>
                     </div>
+
+                    {/* Current Score */}
+                    {hasIncomeProfile && currentScore !== null && (
+                        <div className="text-center mb-8 bg-green-100 text-green-700 py-4 rounded-xl text-2xl font-bold">
+                            Your Current CrediScore: {currentScore}
+                        </div>
+                    )}
 
                     <div className="space-y-10">
                         {/* Employment Details */}
@@ -131,7 +185,7 @@ export default function CreditScoreForm() {
                                         type="number"
                                         value={monthlyExpense}
                                         onChange={(e) => setMonthlyExpense(e.target.value)}
-                                        placeholder="e.g., 30000 (rent, food, etc.)"
+                                        placeholder="e.g., 30000"
                                         className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
                                     />
                                 </div>
@@ -273,10 +327,10 @@ export default function CreditScoreForm() {
                             </div>
                         </div>
 
-                        {/* Financial & KYC */}
+                        {/* Financial Details */}
                         <div className="pb-10">
                             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                                <MdCreditCard className="text-3xl" /> Financial & KYC Details
+                                <MdCreditCard className="text-3xl" /> Financial Obligations
                             </h2>
                             <div className="grid md:grid-cols-2 gap-8">
                                 <div>
@@ -303,37 +357,6 @@ export default function CreditScoreForm() {
                                         className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Aadhaar Number
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={aadhaar}
-                                        onChange={(e) =>
-                                            setAadhaar(
-                                                e.target.value.replace(/\D/g, "").slice(0, 12)
-                                            )
-                                        }
-                                        placeholder="12 digits"
-                                        maxLength={12}
-                                        className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        PAN Number
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={pan}
-                                        onChange={(e) =>
-                                            setPan(e.target.value.toUpperCase().slice(0, 10))
-                                        }
-                                        placeholder="e.g., ABCDE1234F"
-                                        className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
-                                    />
-                                </div>
                             </div>
                         </div>
 
@@ -348,8 +371,10 @@ export default function CreditScoreForm() {
                             }`}
                         >
                             {loading
-                                ? "Updating CrediScore..."
-                                : "Submit Profile & Update CrediScore"}
+                                ? "Processing..."
+                                : hasIncomeProfile
+                                ? "Update Profile & Recalculate CrediScore"
+                                : "Submit Profile & Calculate CrediScore"}
                         </button>
 
                         {message && (
@@ -361,6 +386,11 @@ export default function CreditScoreForm() {
                                 }`}
                             >
                                 {message}
+                                {message.includes("Success") && (
+                                    <p className="text-sm mt-2 text-green-600">
+                                        Redirecting to dashboard...
+                                    </p>
+                                )}
                             </div>
                         )}
                     </div>
