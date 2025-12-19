@@ -2,6 +2,7 @@
 import express from "express";
 import auth from "../middleware/auth.js";
 import { Income } from "../models/Income.js";
+import { PendingIncomeRequests } from "../models/PendingIncomeRequests.js"; // Import the model
 import User from "../models/User.js";
 import upload from "../config/upload.js"; // Plain multer (memoryStorage)
 import mongoose from "mongoose";
@@ -67,11 +68,10 @@ router.post("/verify-details", auth, async (req, res) => {
     }
 });
 
-// Step 2: Upload proof using MongoDB native GridFSBucket (stored only in Atlas)
+// Step 2: Upload proof using MongoDB native GridFSBucket
 router.post("/upload-proof", auth, upload.single("proof"), async (req, res) => {
     try {
         const userId = req.user.id;
-
         if (!req.file) {
             return res.status(400).json({ msg: "No file uploaded" });
         }
@@ -92,25 +92,29 @@ router.post("/upload-proof", auth, upload.single("proof"), async (req, res) => {
         // On successful upload
         uploadStream.on("finish", async () => {
             try {
+                // Update Income with proof details
                 const updatedIncome = await Income.findOneAndUpdate(
                     { user: userId },
                     {
                         proofFileId: uploadStream.id,
                         proofFilename: req.file.originalname,
-                        verificationStatus: "pending",
                     },
-                    { new: true }
+                    { new: true, upsert: true }
                 );
 
                 if (!updatedIncome) {
                     return res.status(404).json({ msg: "Income profile not found" });
                 }
 
-                // Small score boost on submission
-                await User.findByIdAndUpdate(userId, { $inc: { crediScore: 50 } });
+                // Create a PendingIncomeRequests document (this triggers the admin queue)
+                await PendingIncomeRequests.create({
+                    user: userId,
+                    income: updatedIncome._id,
+                    requestStatus: "pending",
+                });
 
                 res.json({
-                    msg: "Proof uploaded successfully to MongoDB! Pending admin review.",
+                    msg: "Proof uploaded successfully! Your income verification request has been submitted for admin review.",
                 });
             } catch (error) {
                 console.error("Save after upload error:", error);

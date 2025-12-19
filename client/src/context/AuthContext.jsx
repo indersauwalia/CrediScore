@@ -1,4 +1,3 @@
-// src/context/AuthContext.jsx
 import React, { createContext, useState, useEffect } from "react";
 import api from "../utils/api";
 import { useNavigate } from "react-router";
@@ -10,6 +9,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
+    // Initial load: This uses the loading spinner for the first app boot
     const loadUser = async () => {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
 
         try {
             const res = await api.get("/auth/me");
-            setUser(res.data); // Contains user fields + income (with monthlyIncome, crediScore, etc.)
+            setUser(res.data);
         } catch (err) {
             console.error("Failed to load user:", err.response?.data || err.message);
             localStorage.removeItem("token");
@@ -34,9 +34,17 @@ export const AuthProvider = ({ children }) => {
         loadUser();
     }, []);
 
+    // SILENT REFRESH: Updates user data without triggering the global loading spinner
     const refreshUser = async () => {
-        setLoading(true);
-        await loadUser();
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        try {
+            const res = await api.get("/auth/me");
+            setUser(res.data); // Update status (e.g., Pending -> Approved)
+        } catch (err) {
+            console.error("Silent refresh failed:", err);
+        }
     };
 
     const signup = async (userData) => {

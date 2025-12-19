@@ -9,7 +9,6 @@ const router = express.Router();
 // Simple scoring logic (income-first model)
 const calculateCrediScore = (income) => {
     let score = 300; // Base score
-
     const surplus = income.monthlyIncome - income.monthlyExpense - (income.existingEmi || 0);
 
     // Surplus income (key for repayment capacity)
@@ -23,7 +22,6 @@ const calculateCrediScore = (income) => {
     if (income.currentExpYears >= 5) score += 100;
     else if (income.currentExpYears >= 3) score += 80;
     else if (income.currentExpYears >= 1) score += 40;
-
     if (income.totalExpYears >= 10) score += 80;
     else if (income.totalExpYears >= 5) score += 50;
 
@@ -50,8 +48,17 @@ const calculateCrediScore = (income) => {
     return Math.min(score, 900); // Max 900
 };
 
+// Calculate credit limit based on CrediScore (matches Dashboard)
+const calculateCreditLimit = (crediScore) => {
+    if (crediScore >= 750) return 400000;
+    if (crediScore >= 700) return 250000;
+    if (crediScore >= 650) return 150000;
+    if (crediScore >= 600) return 100000;
+    return 50000;
+};
+
 // POST /api/credit/submit-income
-// Submit or update income profile → calculate CrediScore
+// Submit or update income profile → calculate CrediScore → set credit limit → trigger verification
 router.post("/submit-income", auth, async (req, res) => {
     try {
         const userId = req.user.id;
@@ -102,12 +109,18 @@ router.post("/submit-income", auth, async (req, res) => {
 
         // Calculate new CrediScore
         const crediScore = calculateCrediScore(income);
-        income.crediScore = crediScore;
-        await income.save();
 
-        // Update User with new score and personal details
+        // Calculate credit limit
+        const creditLimit = calculateCreditLimit(crediScore);
+        const remainingLimit = creditLimit;
+
+        // Update User
         const userUpdate = {
             crediScore,
+            creditLimit,
+            remainingLimit,
+            verificationStatus: "not-started",
+            activeLoansCount: 0,
         };
 
         if (gender !== undefined) userUpdate.gender = gender;
@@ -119,8 +132,11 @@ router.post("/submit-income", auth, async (req, res) => {
         res.json({
             msg: income.isNew
                 ? "Income profile created! CrediScore generated."
-                : "Income profile updated! CrediScore recalculated.",
+                : "Income profile updated! CrediScore and credit limit recalculated.",
             crediScore,
+            creditLimit,
+            remainingLimit,
+            verificationStatus: "not-started",
         });
     } catch (err) {
         console.error("Submit income error:", err);

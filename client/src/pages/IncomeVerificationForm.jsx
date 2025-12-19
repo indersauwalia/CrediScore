@@ -54,7 +54,7 @@ export default function IncomeVerificationForm() {
         setStep1Message("");
 
         try {
-            const res = await api.post("/verify-details", {
+            const res = await api.post("/verification/verify-details", {
                 pan: panNumber.toUpperCase(),
                 accountNumber,
                 ifsc: ifscCode.toUpperCase(),
@@ -89,7 +89,7 @@ export default function IncomeVerificationForm() {
         formData.append("ifsc", ifscCode.toUpperCase());
 
         try {
-            const res = await api.post("/upload-proof", formData, {
+            const res = await api.post("/verification/upload-proof", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 

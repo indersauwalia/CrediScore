@@ -1,5 +1,4 @@
-// pages/Dashboard.jsx
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router";
 import { GiReceiveMoney, GiTrophy } from "react-icons/gi";
 import { FaArrowTrendUp } from "react-icons/fa6";
@@ -10,18 +9,37 @@ import {
     MdArrowForward,
     MdVerified,
     MdWarning,
+    MdError,
+    MdReceiptLong,
+    MdPayments,
+    MdCheckCircle,
+    MdCancel,
+    MdHourglassTop,
 } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
+import api from "../utils/api";
 
 export default function Dashboard() {
     const { user, logout } = useContext(AuthContext);
+    const [loanRequests, setLoanRequests] = useState([]); // State for loan history
     const navigate = useNavigate();
 
     useEffect(() => {
         if (!user) {
             navigate("/", { replace: true });
+        } else {
+            fetchLoanRequests();
         }
     }, [user, navigate]);
+
+    const fetchLoanRequests = async () => {
+        try {
+            const res = await api.get("/loans/my-requests");
+            setLoanRequests(res.data || []);
+        } catch (err) {
+            console.error("Error fetching loans:", err);
+        }
+    };
 
     if (!user) return null;
 
@@ -29,12 +47,13 @@ export default function Dashboard() {
     const hasCreditScore = crediScore > 0;
     const verificationStatus = user.verificationStatus || "not-started";
 
-    const getAvailableCredit = () => {
-        if (crediScore >= 750) return "₹2,50,000";
-        if (crediScore >= 700) return "₹2,00,000";
-        if (crediScore >= 650) return "₹1,50,000";
-        if (crediScore >= 600) return "₹1,00,000";
-        return "₹50,000";
+    const formatCurrency = (amount) => {
+        if (!amount) return "₹0";
+        return new Intl.NumberFormat("en-IN", {
+            style: "currency",
+            currency: "INR",
+            minimumFractionDigits: 0,
+        }).format(amount);
     };
 
     const getScoreColor = () => {
@@ -53,40 +72,35 @@ export default function Dashboard() {
         return "Build Your Score";
     };
 
-    const handleLogout = () => {
-        logout();
-        navigate("/", { replace: true });
+    // Status Badge Helper
+    const getStatusBadge = (status) => {
+        switch (status?.toLowerCase()) {
+            case "approved":
+                return (
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700 font-bold border border-green-200">
+                        <MdCheckCircle /> Approved
+                    </div>
+                );
+            case "rejected":
+                return (
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-100 text-red-700 font-bold border border-red-200">
+                        <MdCancel /> Rejected
+                    </div>
+                );
+            default:
+                return (
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 text-amber-700 font-bold border border-amber-200">
+                        <MdHourglassTop className="animate-pulse" /> Pending
+                    </div>
+                );
+        }
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
-            {/* Navbar */}
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-white/30">
-                <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl">
-                            <GiReceiveMoney className="text-white text-2xl" />
-                        </div>
-                        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-                            CrediScore
-                        </h1>
-                    </div>
-                    <div className="flex items-center gap-6">
-                        <span className="text-sm text-gray-600 font-medium">
-                            Welcome, {user.name || "User"}
-                        </span>
-                        <button
-                            onClick={handleLogout}
-                            className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-full text-sm font-medium transition shadow-md"
-                        >
-                            Logout
-                        </button>
-                    </div>
-                </div>
-            </nav>
+        <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-blue-50 to-green-50">
 
-            {/* Main Content */}
-            <div className="pt-24 pb-12 px-6">
+            {/* Main Content - Internal Scroll only */}
+            <div className="flex-1 overflow-y-auto pt-8 pb-12 px-6 scrollbar-hide">
                 <div className="max-w-7xl mx-auto">
                     {hasCreditScore ? (
                         <>
@@ -105,12 +119,6 @@ export default function Dashboard() {
                                             {verificationStatus === "approved"
                                                 ? "Income Verified"
                                                 : "Basic Scoring"}
-                                        </p>
-                                        <p className="text-lg mt-2 opacity-90">
-                                            Available Limit:{" "}
-                                            <span className="font-bold">
-                                                {getAvailableCredit()}
-                                            </span>
                                         </p>
                                     </div>
                                     <div className="text-center">
@@ -171,7 +179,7 @@ export default function Dashboard() {
                                                 </p>
                                             </div>
                                         </div>
-                                        <NavLink to="/income-verification">
+                                        <NavLink to="/verify-income">
                                             <button className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-md transition flex items-center gap-3">
                                                 Verify Income Now
                                                 <MdArrowForward className="text-2xl" />
@@ -194,7 +202,7 @@ export default function Dashboard() {
                                                 </p>
                                             </div>
                                         </div>
-                                        <NavLink to="/income-verification">
+                                        <NavLink to="/verify-income">
                                             <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-md transition">
                                                 Re-submit Verification
                                             </button>
@@ -204,96 +212,121 @@ export default function Dashboard() {
                             </div>
 
                             {/* Stats Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                                <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="text-gray-600 text-lg">
-                                                Available Credit Limit
-                                            </p>
-                                            <p className="text-4xl font-bold text-gray-800 mt-2">
-                                                {getAvailableCredit()}
-                                            </p>
-                                        </div>
-                                        <MdAccountBalanceWallet className="text-6xl text-blue-600 opacity-80" />
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+                                <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-lg">Total Credit Limit</p>
+                                        <p className="text-4xl font-bold text-gray-800 mt-2">
+                                            {formatCurrency(user.creditLimit || 0)}
+                                        </p>
                                     </div>
+                                    <MdAccountBalanceWallet className="text-6xl text-blue-600 opacity-80" />
                                 </div>
-                                <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="text-gray-600 text-lg">
-                                                Loan Eligibility
-                                            </p>
-                                            <p className="text-4xl font-bold text-green-600 mt-2">
-                                                Approved
-                                            </p>
-                                        </div>
-                                        <FaArrowTrendUp className="text-6xl text-green-600 opacity-80" />
+                                <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-lg">Remaining Limit</p>
+                                        <p className="text-4xl font-bold text-green-600 mt-2">
+                                            {formatCurrency(user.remainingLimit || 0)}
+                                        </p>
                                     </div>
+                                    <FaArrowTrendUp className="text-6xl text-green-600 opacity-80" />
                                 </div>
-                                <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="text-gray-600 text-lg">Next Step</p>
-                                            <p className="text-2xl font-bold text-gray-800 mt-2">
-                                                Apply for Loan
-                                            </p>
-                                        </div>
+                                <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-lg">Loan Requests</p>
+                                        <p className="text-4xl font-bold text-indigo-600 mt-2">
+                                            {loanRequests.length}
+                                        </p>
                                     </div>
+                                    <MdReceiptLong className="text-6xl text-indigo-600 opacity-80" />
                                 </div>
                             </div>
 
-                            {/* Apply CTA */}
-                            <div className="text-center mb-12">
-                                <h3 className="text-4xl font-extrabold text-gray-800 mb-6">
-                                    Get Instant Digital Loan Today
-                                </h3>
-                                <button className="bg-gradient-to-r from-blue-600 to-green-600 text-white px-16 py-6 rounded-2xl text-2xl font-bold shadow-2xl hover:scale-105 transition">
-                                    Apply Now →
-                                </button>
-                            </div>
-
-                            {/* Recent Activity */}
-                            <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
-                                <h3 className="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-4">
-                                    <MdHistory className="text-4xl text-blue-600" />
-                                    Recent Activity
-                                </h3>
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-6 py-4 border-b border-gray-100">
-                                        <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                                            <FaArrowTrendUp className="text-2xl text-green-600" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-lg font-medium text-gray-800">
-                                                Credit Profile Completed
-                                            </p>
-                                            <p className="text-gray-500">
-                                                Your details have been verified
-                                            </p>
-                                        </div>
-                                        <p className="text-sm text-gray-500">Just now</p>
-                                    </div>
-                                    <div className="flex items-center gap-6 py-4">
-                                        <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                                            <MdAccountBalanceWallet className="text-2xl text-blue-600" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-lg font-medium text-gray-800">
-                                                Credit Limit Activated
-                                            </p>
-                                            <p className="text-gray-500">
-                                                Up to {getAvailableCredit()} available
-                                            </p>
-                                        </div>
-                                        <p className="text-sm text-gray-500">Today</p>
-                                    </div>
+                            {/* Section: Active Loans / Applications */}
+                            <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100 mb-12">
+                                <div className="flex items-center gap-3 mb-8">
+                                    <MdPayments className="text-4xl text-blue-600" />
+                                    <h3 className="text-3xl font-extrabold text-gray-800">
+                                        Your Loan Applications
+                                    </h3>
                                 </div>
+
+                                {loanRequests.length > 0 ? (
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {loanRequests.map((loan) => (
+                                            <div
+                                                key={loan._id}
+                                                className="bg-gray-50 rounded-2xl p-6 border border-gray-200 flex flex-col md:flex-row justify-between items-center gap-6 transition hover:border-blue-300"
+                                            >
+                                                {/* 1. Icon & Title Section - Fixed Width for Alignment */}
+                                                <div className="flex items-center gap-6 md:w-1/3 shrink-0">
+                                                    <div
+                                                        className={`p-4 rounded-xl shrink-0 ${
+                                                            loan.requestStatus === "rejected"
+                                                                ? "bg-red-100 text-red-600"
+                                                                : "bg-blue-100 text-blue-600"
+                                                        }`}
+                                                    >
+                                                        <GiReceiveMoney className="text-3xl" />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <h4 className="text-xl font-bold text-gray-800 truncate">
+                                                            {loan.loanType}
+                                                        </h4>
+                                                        <p className="text-gray-500 font-mono text-xs">
+                                                            ID: {loan._id.slice(-8).toUpperCase()}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* 2. Stats Grid - Fixed Width and Flex-1 for Alignment */}
+                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-sm flex-1">
+                                                    <div>
+                                                        <p className="text-gray-400 font-bold uppercase">
+                                                            Amount
+                                                        </p>
+                                                        <p className="text-lg font-bold">
+                                                            {formatCurrency(loan.requestedAmount)}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-gray-400 font-bold uppercase">
+                                                            Tenure
+                                                        </p>
+                                                        <p className="text-lg font-bold">
+                                                            {loan.tenure} Mo.
+                                                        </p>
+                                                    </div>
+                                                    <div className="hidden md:block">
+                                                        <p className="text-gray-400 font-bold uppercase">
+                                                            Interest
+                                                        </p>
+                                                        <p className="text-lg font-bold text-green-600">
+                                                            {loan.interestRate}%
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* 3. Status Section - Fixed Width for Alignment */}
+                                                <div className="w-full md:w-48 flex md:justify-end">
+                                                    {getStatusBadge(loan.requestStatus)}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-3xl">
+                                        <p className="text-xl text-gray-500">
+                                            No loan applications found.
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </>
                     ) : (
-                        /* No Score Yet */
-                        <div className="text-center py-32">
+                        /* No Score Yet section - Kept exactly as provided */
+                        /* RESTORED FULL "NO SCORE YET" SECTION */
+                        <div className="text-center h-full flex items-center justify-center">
                             <div className="max-w-3xl mx-auto">
                                 <MdCreditScore className="text-9xl text-gray-300 mx-auto mb-10" />
                                 <h2 className="text-5xl font-extrabold text-gray-800 mb-8">
@@ -320,11 +353,14 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* Footer */}
-            <footer className="py-10 text-center text-gray-500 text-sm border-t border-gray-200">
-                © {new Date().getFullYear()} CrediScore • Income-First Digital Lending • RBI
-                Guidelines Compliant
+            {/* Footer - Shrink-0 keeps it visible */}
+            <footer className="shrink-0 py-6 text-center text-gray-400 text-xs border-t border-gray-200 bg-white">
+                © {new Date().getFullYear()} CrediScore • Digital Lending • RBI Guidelines Compliant
             </footer>
         </div>
     );
 }
+
+
+
+

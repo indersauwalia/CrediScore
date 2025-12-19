@@ -25,14 +25,38 @@ const UserSchema = new mongoose.Schema(
         maritalStatus: { type: String },
         educationLevel: { type: String },
 
+        // NEW: Role for Admin Access
+        role: {
+            type: String,
+            enum: ["user", "admin"],
+            default: "user",
+        },
+
         // Scoring & Verification Status (Single source of truth)
         crediScore: { type: Number, default: 0 },
         verificationStatus: {
             type: String,
-            enum: ["pending", "approved", "rejected"],
-            default: "pending",
+            enum: ["not-started", "pending", "approved", "rejected"],
+            default: "not-started",
         },
         adminNote: { type: String }, // Optional note from admin
+
+        // NEW: Credit Limit & Loan Tracking Fields
+        creditLimit: {
+            type: Number,
+            default: 0,
+            min: 0,
+        },
+        remainingLimit: {
+            type: Number,
+            default: 0,
+            min: 0,
+        },
+        activeLoansCount: {
+            type: Number,
+            default: 0,
+            min: 0,
+        },
     },
     { timestamps: true }
 );
