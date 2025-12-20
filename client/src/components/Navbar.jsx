@@ -1,6 +1,6 @@
 // src/components/Navbar.jsx
 import { useContext } from "react";
-import { useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { GiReceiveMoney } from "react-icons/gi";
 import { AuthContext } from "../context/AuthContext";
 
@@ -15,10 +15,16 @@ export default function Navbar() {
 
     if (!user) return null;
 
+    const linkClass = ({ isActive }) =>
+        `text-sm font-semibold transition ${
+            isActive ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
+        }`;
+
     return (
         <>
             <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-white/30">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                    {/* Logo */}
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl">
                             <GiReceiveMoney className="text-white text-2xl" />
@@ -27,6 +33,21 @@ export default function Navbar() {
                             CrediScore
                         </h1>
                     </div>
+
+                    {/* Center Nav Links */}
+                    <div className="hidden md:flex items-center gap-8">
+                        <NavLink to="/dashboard" className={linkClass}>
+                            Dashboard
+                        </NavLink>
+                        <NavLink to="/loans" className={linkClass}>
+                            Loans
+                        </NavLink>
+                        <NavLink to="/tools" className={linkClass}>
+                            Tools
+                        </NavLink>
+                    </div>
+
+                    {/* User Actions */}
                     <div className="flex items-center gap-6">
                         <span className="text-sm text-gray-600 font-medium">
                             Welcome, {user.name || "User"}
@@ -40,7 +61,8 @@ export default function Navbar() {
                     </div>
                 </div>
             </nav>
-            <div className="h-20"></div> {/* Adjust this height to match navbar */}
+
+            <div className="h-20" />
         </>
     );
 }

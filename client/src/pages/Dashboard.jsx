@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router";
+import { NavLink, redirect, useNavigate } from "react-router";
 import { GiReceiveMoney, GiTrophy } from "react-icons/gi";
 import { FaArrowTrendUp } from "react-icons/fa6";
 import {
@@ -27,7 +27,11 @@ export default function Dashboard() {
     useEffect(() => {
         if (!user) {
             navigate("/", { replace: true });
-        } else {
+        } 
+        else if(user.role === "admin"){
+            navigate("/admin");
+        } 
+        else {
             fetchLoanRequests();
         }
     }, [user, navigate]);
