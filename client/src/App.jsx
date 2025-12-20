@@ -10,22 +10,23 @@ import CreditScoreForm from './pages/CreditScoreForm';
 import IncomeVerificationForm from './pages/IncomeVerificationForm';
 import Loans from './pages/Loans';
 import AdminDashboard from './pages/AdminDashboard';
+import EMICalculator from './pages/EMICalculator';
 
 function App() {
     return (
         <>
-        <Navbar />
-        <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/credit-form" element={<CreditScoreForm />} />
-            <Route path="/verify-income" element={<IncomeVerificationForm />} />
-            <Route path="/loans" element={<Loans />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            
-        </Routes>
+            <Navbar />
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/credit-form" element={<CreditScoreForm />} />
+                <Route path="/verify-income" element={<IncomeVerificationForm />} />
+                <Route path="/loans" element={<Loans />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/tools" element={<EMICalculator />} />
+            </Routes>
         </>
     );
 }

@@ -49,12 +49,12 @@ export default function LoanPage() {
     const loanSchemes = [
         {
             title: "Personal Loan",
-            maxAmount: 150000,
+            maxAmount: 500000,
             tenure: "6 - 36 months",
             baseRate: 14.0,
             processingFee: "1% + GST",
             description: "For personal needs, medical, travel, or any emergency.",
-            recommended: true,
+            recommended: crediScore >= 850,
         },
         {
             title: "Salary Advance",
@@ -81,7 +81,7 @@ export default function LoanPage() {
             baseRate: 11.5,
             processingFee: "1% + GST",
             description: "Fund higher education with flexible repayment.",
-            recommended: crediScore >= 650,
+            recommended: crediScore >= 750,
         },
         {
             title: "Two-Wheeler Loan",
@@ -99,7 +99,7 @@ export default function LoanPage() {
             baseRate: 10.0,
             processingFee: "0.5% + GST",
             description: "Immediate funds for unplanned medical treatments.",
-            recommended: true,
+            recommended: crediScore >= 700,
         },
     ];
 
@@ -155,25 +155,7 @@ export default function LoanPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-white/30">
-                <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl">
-                            <GiReceiveMoney className="text-white text-2xl" />
-                        </div>
-                        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-                            CrediScore
-                        </h1>
-                    </div>
-                    <div className="flex items-center gap-6">
-                        <span className="text-sm text-gray-600 font-medium">
-                            Welcome, {user.name || "User"}
-                        </span>
-                    </div>
-                </div>
-            </nav>
-
-            <div className="pt-24 pb-12 px-6">
+            <div className="pt-5 pb-5 px-6">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-12">
                         <h1 className="text-5xl font-extrabold text-gray-800 mb-4">

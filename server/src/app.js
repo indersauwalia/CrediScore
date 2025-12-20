@@ -10,10 +10,8 @@ import adminRoutes from "./routes/admin.js";
 
 const app = express();
 
-// Allow only your frontend (more secure)
 app.use(cors());
 
-// Parse JSON (increased limit for future file uploads)
 app.use(express.json({ limit: "10mb" }));
 
 // Mount auth routes
@@ -35,7 +33,6 @@ app.get("/", (req, res) => {
     });
 });
 
-// 404 handler (nice to have)
 app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });
 });
