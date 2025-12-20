@@ -24,6 +24,7 @@ function App() {
             <Route path="/verify-income" element={<IncomeVerificationForm />} />
             <Route path="/loans" element={<Loans />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            
         </Routes>
         </>
     );
