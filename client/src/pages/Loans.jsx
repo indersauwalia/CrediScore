@@ -154,7 +154,7 @@ export default function LoanPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+        <div className="min-h-screen bg-linear-to-br from-blue-50 to-green-50">
             <div className="pt-5 pb-5 px-6">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-12">
@@ -261,7 +261,7 @@ export default function LoanPage() {
                                             disabled={!isEligible}
                                             className={`w-full py-4 rounded-xl text-xl font-bold transition flex items-center justify-center gap-3 ${
                                                 isEligible
-                                                    ? "bg-gradient-to-r from-blue-600 to-green-600 text-white hover:scale-105 shadow-lg"
+                                                    ? "bg-linear-to-r from-blue-600 to-green-600 text-white hover:scale-105 shadow-lg"
                                                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                                             }`}
                                         >

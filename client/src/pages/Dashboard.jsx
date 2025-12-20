@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { NavLink, redirect, useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { GiReceiveMoney, GiTrophy } from "react-icons/gi";
 import { FaArrowTrendUp } from "react-icons/fa6";
 import {
@@ -101,7 +101,7 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-blue-50 to-green-50">
+        <div className="h-screen flex flex-col overflow-hidden bg-linear-to-br from-blue-50 to-green-50">
 
             {/* Main Content - Internal Scroll only */}
             <div className="flex-1 overflow-y-auto pt-8 pb-12 px-6 scrollbar-hide">
@@ -110,7 +110,7 @@ export default function Dashboard() {
                         <>
                             {/* CrediScore Card */}
                             <div
-                                className={`bg-gradient-to-r ${getScoreColor()} rounded-3xl shadow-2xl p-8 text-white mb-10`}
+                                className={`bg-linear-to-r ${getScoreColor()} rounded-3xl shadow-2xl p-8 text-white mb-10`}
                             >
                                 <div className="flex flex-col md:flex-row items-center justify-between gap-8">
                                     <div>
@@ -343,7 +343,7 @@ export default function Dashboard() {
                                     No CIBIL or traditional credit history required.
                                 </p>
                                 <NavLink to="/credit-form">
-                                    <button className="bg-gradient-to-r from-blue-600 to-green-600 text-white px-16 py-8 rounded-3xl text-3xl font-bold shadow-2xl hover:scale-110 transition flex items-center gap-4 mx-auto">
+                                    <button className="bg-linear-to-r from-blue-600 to-green-600 text-white px-16 py-8 rounded-3xl text-3xl font-bold shadow-2xl hover:scale-110 transition flex items-center gap-4 mx-auto">
                                         Complete Credit Profile
                                         <MdArrowForward className="text-4xl" />
                                     </button>

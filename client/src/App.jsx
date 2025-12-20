@@ -13,9 +13,12 @@ import AdminDashboard from './pages/AdminDashboard';
 import EMICalculator from './pages/EMICalculator';
 
 function App() {
+    const location = useLocation();
+    const showNavbar = location.pathname !== "/";
+
     return (
         <>
-            <Navbar />
+            {showNavbar && <Navbar />}
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />

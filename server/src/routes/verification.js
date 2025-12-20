@@ -5,6 +5,7 @@ import { Income } from "../models/Income.js";
 import { PendingIncomeRequests } from "../models/PendingIncomeRequests.js"; // Import the model
 import User from "../models/User.js";
 import upload from "../config/upload.js"; // Plain multer (memoryStorage)
+import { mockValidAccounts } from "../config/demoData.js";
 import mongoose from "mongoose";
 
 const router = express.Router();
@@ -14,6 +15,7 @@ router.post("/verify-details", auth, async (req, res) => {
     try {
         const { pan, accountNumber, ifsc } = req.body;
         const userId = req.user.id;
+        const user = await User.findById(userId);
 
         const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
         const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
@@ -28,18 +30,12 @@ router.post("/verify-details", auth, async (req, res) => {
             return res.status(400).json({ msg: "Invalid or missing IFSC code" });
         }
 
-        // Simulated verification (demo data)
-        const mockValidAccounts = [
-            { pan: "ABCDE1234F", account: "123456789012", ifsc: "SBIN0001234" },
-            { pan: "FGHIJ5678K", account: "987654321098", ifsc: "HDFC0000256" },
-            { pan: "LMNOP9876Z", account: "555566667777", ifsc: "ICIC0000001" },
-        ];
-
         const isValid = mockValidAccounts.some(
             (acc) =>
                 acc.pan === pan.toUpperCase() &&
                 acc.account === accountNumber &&
-                acc.ifsc === ifsc.toUpperCase()
+                acc.ifsc === ifsc.toUpperCase() &&
+                acc.name.toLowerCase() === user.name.toLowerCase()
         );
 
         if (!isValid) {

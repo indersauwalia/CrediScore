@@ -1,6 +1,6 @@
 // pages/Login.jsx
-import React, { useState, useContext } from "react";
-import { NavLink } from "react-router";
+import React, { useState, useContext, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router";
 import { GiReceiveMoney } from "react-icons/gi";
 import { FcGoogle } from "react-icons/fc";
 import { MdEmail, MdLockOutline } from "react-icons/md";
@@ -11,8 +11,16 @@ export default function Login() {
     const [emailOrPhone, setEmailOrPhone] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const { user, logout } = useContext(AuthContext);
 
     const { login } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user) {
+            navigate("/dashboard", { replace: true });
+        }
+    }, [user, navigate]);
 
     const isValid = emailOrPhone.trim() !== "" && password.length >= 6;
 

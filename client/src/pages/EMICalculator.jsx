@@ -87,13 +87,13 @@ const EMICalculator = ({ loanDetails, onCalculate }) => {
 
             <button
                 onClick={calculateEMI}
-                className="w-full bg-gradient-to-r from-blue-600 to-green-600 text-white py-4 rounded-xl text-xl font-bold hover:scale-105 transition shadow-lg mb-8"
+                className="w-full bg-linear-to-r from-blue-600 to-green-600 text-white py-4 rounded-xl text-xl font-bold hover:scale-105 transition shadow-lg mb-8"
             >
                 Calculate EMI
             </button>
 
             {emi > 0 && (
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+                <div className="bg-linear-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
                     <h3 className="text-2xl font-bold text-gray-800 mb-4">EMI Breakdown</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
                         <div>

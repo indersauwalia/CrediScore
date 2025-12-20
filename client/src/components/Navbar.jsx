@@ -26,31 +26,33 @@ export default function Navbar() {
                 <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
                     {/* Logo */}
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl">
+                        <div className="p-2 bg-linear-to-br from-green-500 to-emerald-600 rounded-xl">
                             <GiReceiveMoney className="text-white text-2xl" />
                         </div>
-                        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+                        <h1 className="text-2xl font-bold bg-linear-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
                             CrediScore
                         </h1>
                     </div>
 
                     {/* Center Nav Links */}
-                    <div className="hidden md:flex items-center gap-8">
-                        <NavLink to="/dashboard" className={linkClass}>
-                            Dashboard
-                        </NavLink>
-                        <NavLink to="/loans" className={linkClass}>
-                            Loans
-                        </NavLink>
-                        <NavLink to="/tools" className={linkClass}>
-                            Tools
-                        </NavLink>
-                    </div>
+                    {user.role === "user" && (
+                        <div className="hidden md:flex items-center gap-8">
+                            <NavLink to="/dashboard" className={linkClass}>
+                                Dashboard
+                            </NavLink>
+                            <NavLink to="/loans" className={linkClass}>
+                                Loans
+                            </NavLink>
+                            <NavLink to="/tools" className={linkClass}>
+                                Tools
+                            </NavLink>
+                        </div>
+                    )}
 
                     {/* User Actions */}
                     <div className="flex items-center gap-6">
                         <span className="text-sm text-gray-600 font-medium">
-                            Welcome, {user.name || "User"}
+                            {user.role === "admin" && "Admin View |"} Welcome, {user.name}
                         </span>
                         <button
                             onClick={handleLogout}
