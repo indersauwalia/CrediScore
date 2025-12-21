@@ -1,4 +1,3 @@
-// src/models/PendingIncomeRequests.js
 import mongoose from "mongoose";
 
 const PendingIncomeRequestsSchema = new mongoose.Schema(
@@ -23,7 +22,19 @@ const PendingIncomeRequestsSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// FIXED: Modern Mongoose async pre-save hook (no next())
+
+
+
+
+
+
+
+
+
+
+
+
+
 PendingIncomeRequestsSchema.pre("save", async function () {
     if (this.isNew) {
         try {
@@ -34,12 +45,11 @@ PendingIncomeRequestsSchema.pre("save", async function () {
             }
         } catch (err) {
             console.error("Error setting pending status:", err);
-            // Do not throw — let save continue
         }
     }
 });
 
-// FIXED: Modern async post-save hook
+
 PendingIncomeRequestsSchema.post("save", async function (doc) {
     if (doc.requestStatus === "approved" || doc.requestStatus === "rejected") {
         try {

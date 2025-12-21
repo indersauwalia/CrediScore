@@ -189,11 +189,6 @@ export default function Signup() {
                                 Create Account
                             </button>
 
-                            {/* Google Signup */}
-                            <button className="w-full py-4 rounded-xl border border-gray-300 hover:border-blue-600 hover:bg-blue-50 transition flex items-center justify-center gap-3 text-sm">
-                                <FcGoogle className="text-xl" /> Continue with Google
-                            </button>
-
                             <p className="text-center text-xs text-gray-500">
                                 Already have an account?{" "}
                                 <NavLink

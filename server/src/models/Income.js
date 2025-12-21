@@ -1,4 +1,3 @@
-// src/models/Income.js
 import mongoose from "mongoose";
 
 const IncomeSchema = new mongoose.Schema(
@@ -20,12 +19,10 @@ const IncomeSchema = new mongoose.Schema(
         existingEmi: { type: Number, default: 0 },
         creditCardSpend: { type: Number, default: 0 },
 
-        // Verification details
         pan: { type: String, match: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/ },
         bankAccountNo: { type: String },
         ifsc: { type: String, match: /^[A-Z]{4}0[A-Z0-9]{6}$/ },
 
-        // Proof document
         proofFileId: { type: mongoose.Schema.Types.ObjectId },
         proofFilename: { type: String },
     },

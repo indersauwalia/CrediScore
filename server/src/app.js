@@ -1,4 +1,3 @@
-// app.js - Slightly improved version
 import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth.js";
@@ -14,7 +13,6 @@ app.use(cors());
 
 app.use(express.json({ limit: "10mb" }));
 
-// Mount auth routes
 app.use("/api/auth", authRoutes);
 
 app.use("/api/admin", adminRoutes);
@@ -25,7 +23,6 @@ app.use("/api/credit", creditRoutes);
 
 app.use("/api/verification", verificationRouter);
 
-// Health check route
 app.get("/", (req, res) => {
     res.json({
         message: "CrediScore Backend is running!",

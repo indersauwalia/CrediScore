@@ -1,16 +1,14 @@
-// src/routes/verification.js
 import express from "express";
 import auth from "../middleware/auth.js";
 import { Income } from "../models/Income.js";
-import { PendingIncomeRequests } from "../models/PendingIncomeRequests.js"; // Import the model
+import { PendingIncomeRequests } from "../models/PendingIncomeRequests.js"; 
 import User from "../models/User.js";
-import upload from "../config/upload.js"; // Plain multer (memoryStorage)
+import upload from "../config/upload.js"; 
 import { mockValidAccounts } from "../config/demoData.js";
 import mongoose from "mongoose";
 
 const router = express.Router();
 
-// Step 1: Verify PAN, Account No, IFSC (Simulated)
 router.post("/verify-details", auth, async (req, res) => {
     try {
         const { pan, accountNumber, ifsc } = req.body;
@@ -44,7 +42,6 @@ router.post("/verify-details", auth, async (req, res) => {
             });
         }
 
-        // Save verified details
         await Income.findOneAndUpdate(
             { user: userId },
             {
@@ -64,7 +61,28 @@ router.post("/verify-details", auth, async (req, res) => {
     }
 });
 
-// Step 2: Upload proof using MongoDB native GridFSBucket
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 router.post("/upload-proof", auth, upload.single("proof"), async (req, res) => {
     try {
         const userId = req.user.id;
@@ -72,23 +90,18 @@ router.post("/upload-proof", auth, upload.single("proof"), async (req, res) => {
             return res.status(400).json({ msg: "No file uploaded" });
         }
 
-        // Create GridFS bucket
         const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
             bucketName: "proofs",
         });
 
-        // Create upload stream
         const uploadStream = bucket.openUploadStream(req.file.originalname, {
             contentType: req.file.mimetype,
         });
 
-        // Pipe the file buffer into the stream
         uploadStream.end(req.file.buffer);
 
-        // On successful upload
         uploadStream.on("finish", async () => {
             try {
-                // Update Income with proof details
                 const updatedIncome = await Income.findOneAndUpdate(
                     { user: userId },
                     {
@@ -102,7 +115,6 @@ router.post("/upload-proof", auth, upload.single("proof"), async (req, res) => {
                     return res.status(404).json({ msg: "Income profile not found" });
                 }
 
-                // Create a PendingIncomeRequests document (this triggers the admin queue)
                 await PendingIncomeRequests.create({
                     user: userId,
                     income: updatedIncome._id,
@@ -118,7 +130,6 @@ router.post("/upload-proof", auth, upload.single("proof"), async (req, res) => {
             }
         });
 
-        // On error during upload
         uploadStream.on("error", (err) => {
             console.error("GridFS upload stream error:", err);
             res.status(500).json({ msg: "File upload failed" });

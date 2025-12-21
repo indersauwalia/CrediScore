@@ -1,4 +1,3 @@
-// src/models/User.js
 import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema(
@@ -20,28 +19,21 @@ const UserSchema = new mongoose.Schema(
         },
         password: { type: String, required: true, minlength: 6 },
 
-        // Personal details
         gender: { type: String },
         maritalStatus: { type: String },
         educationLevel: { type: String },
-
-        // NEW: Role for Admin Access
         role: {
             type: String,
             enum: ["user", "admin"],
             default: "user",
         },
-
-        // Scoring & Verification Status (Single source of truth)
         crediScore: { type: Number, default: 0 },
         verificationStatus: {
             type: String,
             enum: ["not-started", "pending", "approved", "rejected"],
             default: "not-started",
         },
-        adminNote: { type: String }, // Optional note from admin
-
-        // NEW: Credit Limit & Loan Tracking Fields
+        adminNote: { type: String },
         creditLimit: {
             type: Number,
             default: 0,

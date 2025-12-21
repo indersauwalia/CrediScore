@@ -1,4 +1,3 @@
-// src/routes/auth.js
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -8,8 +7,6 @@ import auth from "../middleware/auth.js";
 
 const router = express.Router();
 
-// @route POST /api/auth/signup
-// @desc Register user
 router.post("/signup", async (req, res) => {
     const { name, age, phone, email, password } = req.body;
     try {
@@ -38,8 +35,6 @@ router.post("/signup", async (req, res) => {
     }
 });
 
-// @route POST /api/auth/login
-// @desc Authenticate user & get token
 router.post("/login", async (req, res) => {
     const { emailOrPhone, password } = req.body;
     try {
@@ -65,8 +60,7 @@ router.post("/login", async (req, res) => {
     }
 });
 
-// @route GET /api/auth/me
-// @desc Get current authenticated user + income (with income data)
+
 router.get("/me", auth, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select("-password");
@@ -74,12 +68,11 @@ router.get("/me", auth, async (req, res) => {
             return res.status(404).json({ msg: "User not found" });
         }
 
-        // Fetch income which contains monthlyIncome and all credit/income fields
         const income = await Income.findOne({ user: req.user.id });
 
         res.json({
             ...user.toObject(),
-            income: income || null, // This includes monthlyIncome, crediScore, etc.
+            income: income || null, 
         });
     } catch (err) {
         console.error("Get me error:", err.message);

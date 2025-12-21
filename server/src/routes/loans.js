@@ -1,4 +1,3 @@
-// src/routes/loans.js
 import express from "express";
 import auth from "../middleware/auth.js";
 import { PendingLoanRequests } from "../models/PendingLoanRequests.js";
@@ -6,14 +5,10 @@ import User from "../models/User.js";
 
 const router = express.Router();
 
-// POST /api/loans/apply
 router.post("/apply", auth, async (req, res) => {
     try {
         const userId = req.user.id;
 
-        // --- THE FIX: Fetch fresh data from DB ---
-        // Tokens are static; they don't update when an admin approves a user.
-        // We must query the DB to get the latest status.
         const user = await User.findById(userId);
 
         if (!user) {
@@ -22,8 +17,6 @@ router.post("/apply", auth, async (req, res) => {
 
         const { loanType, requestedAmount, tenure, interestRate, processingFee } = req.body;
 
-        // Basic eligibility check (using fresh database values)
-        // .toLowerCase() added to prevent "Approved" vs "approved" errors
         if (user.verificationStatus?.toLowerCase() !== "approved") {
             return res.status(400).json({ msg: "Income verification pending or not approved" });
         }
@@ -36,7 +29,6 @@ router.post("/apply", auth, async (req, res) => {
             return res.status(400).json({ msg: "Minimum loan amount is ₹1,000" });
         }
 
-        // Create pending loan request
         const pendingRequest = await PendingLoanRequests.create({
             user: userId,
             loanType,
@@ -44,7 +36,7 @@ router.post("/apply", auth, async (req, res) => {
             tenure,
             interestRate,
             processingFee,
-            requestStatus: "pending", // Admin will approve/reject
+            requestStatus: "pending",
         });
 
         res.json({
@@ -57,7 +49,6 @@ router.post("/apply", auth, async (req, res) => {
     }
 });
 
-// GET /api/loans/my-requests
 router.get("/my-requests", auth, async (req, res) => {
     try {
         const requests = await PendingLoanRequests.find({ user: req.user.id });

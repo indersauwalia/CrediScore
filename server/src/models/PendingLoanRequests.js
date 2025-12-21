@@ -10,7 +10,6 @@ const PendingLoanRequestsSchema = new mongoose.Schema(
         loanType: {
             type: String,
             required: true,
-            // Expanded to include all frontend schemes
             enum: [
                 "Personal Loan",
                 "Salary Advance",
@@ -25,13 +24,12 @@ const PendingLoanRequestsSchema = new mongoose.Schema(
             required: true,
         },
         tenure: {
-            type: Number, // in months
+            type: Number,
             required: true,
-            // Increased max to 60 to accommodate Education Loans
             max: 60,
         },
         interestRate: {
-            type: Number, // in %
+            type: Number,
             required: true,
         },
         processingFee: {
@@ -49,14 +47,13 @@ const PendingLoanRequestsSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// Hook: Updates User's credit limits automatically upon approval
+
 PendingLoanRequestsSchema.post("save", async function (doc) {
     if (doc.requestStatus === "approved" && doc.disbursedAmount > 0) {
         try {
             const User = mongoose.model("User");
             const user = await User.findById(doc.user);
             if (user) {
-                // Subtract the disbursed amount from the user's remaining limit
                 user.remainingLimit = Math.max(0, user.remainingLimit - doc.disbursedAmount);
                 user.activeLoansCount = (user.activeLoansCount || 0) + 1;
                 await user.save();
