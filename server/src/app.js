@@ -7,12 +7,14 @@ import loanRoutes from "./routes/loans.js";
 import adminRoutes from "./routes/admin.js";
 
 
-const app = express({
-    origin: "https://crediscore.vercel.app",
-    credentials: true,
-});
+const app = express();
 
-app.use(cors());
+app.use(
+    cors({
+        origin: "https://crediscore.vercel.app",
+        credentials: true,
+    }),
+);
 
 app.use(express.json({ limit: "10mb" }));
 
