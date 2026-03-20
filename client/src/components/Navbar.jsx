@@ -1,4 +1,3 @@
-// src/components/Navbar.jsx
 import { useContext } from "react";
 import { NavLink, useNavigate } from "react-router";
 import { GiReceiveMoney } from "react-icons/gi";
@@ -24,7 +23,6 @@ export default function Navbar() {
         <>
             <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-white/30">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                    {/* Logo */}
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-linear-to-br from-green-500 to-emerald-600 rounded-xl">
                             <GiReceiveMoney className="text-white text-2xl" />
@@ -34,7 +32,6 @@ export default function Navbar() {
                         </h1>
                     </div>
 
-                    {/* Center Nav Links */}
                     {user.role === "user" && (
                         <div className="hidden md:flex items-center gap-8">
                             <NavLink to="/dashboard" className={linkClass}>
@@ -49,7 +46,6 @@ export default function Navbar() {
                         </div>
                     )}
 
-                    {/* User Actions */}
                     <div className="flex items-center gap-6">
                         <span className="text-sm text-gray-600 font-medium">
                             {user.role === "admin" && "Admin View |"} Welcome, {user.name}

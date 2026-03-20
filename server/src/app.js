@@ -7,7 +7,10 @@ import loanRoutes from "./routes/loans.js";
 import adminRoutes from "./routes/admin.js";
 
 
-const app = express();
+const app = express({
+    origin: "https://crediscore.vercel.app",
+    credentials: true,
+});
 
 app.use(cors());
 

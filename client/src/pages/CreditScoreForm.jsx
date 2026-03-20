@@ -1,4 +1,3 @@
-// pages/CreditScoreForm.jsx
 import React, { useState, useContext, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router";
 import { MdWork, MdPerson, MdCreditCard, MdArrowBack } from "react-icons/md";
@@ -9,7 +8,6 @@ export default function CreditScoreForm() {
     const { user, logout, refreshUser } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    // Form state
     const [monthlyIncome, setMonthlyIncome] = useState("");
     const [monthlyExpense, setMonthlyExpense] = useState("");
     const [employmentType, setEmploymentType] = useState("salaried");
@@ -24,13 +22,11 @@ export default function CreditScoreForm() {
     const [existingEmi, setExistingEmi] = useState("");
     const [creditCardSpend, setCreditCardSpend] = useState("");
 
-    // UI state
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
     const [hasIncomeProfile, setHasIncomeProfile] = useState(false);
     const [currentScore, setCurrentScore] = useState(null);
 
-    // Form validation
     const isValid =
         monthlyIncome > 0 &&
         monthlyExpense >= 0 &&
@@ -43,7 +39,6 @@ export default function CreditScoreForm() {
         residenceType &&
         existingEmi >= 0;
 
-    // Pre-fill from user.income
     useEffect(() => {
         if (!user) return;
         const income = user.income;
@@ -63,7 +58,6 @@ export default function CreditScoreForm() {
             setCreditCardSpend(income.creditCardSpend?.toString() || "");
         }
 
-        // Personal fields
         setGender(user.gender || "");
         setMaritalStatus(user.maritalStatus || "");
         setEducationLevel(user.educationLevel || "");
@@ -119,7 +113,6 @@ export default function CreditScoreForm() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-8 px-4">
             <div className="max-w-3xl mx-auto">
-                {/* Header */}
                 <div className="flex justify-between items-center mb-8">
                     <NavLink
                         to="/dashboard"
@@ -136,7 +129,6 @@ export default function CreditScoreForm() {
                     </button>
                 </div>
 
-                {/* Main Form Card */}
                 <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12">
                     <div className="text-center mb-10">
                         <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800">
@@ -151,7 +143,6 @@ export default function CreditScoreForm() {
                         </p>
                     </div>
 
-                    {/* Current Score */}
                     {hasIncomeProfile && currentScore !== null && (
                         <div className="text-center mb-8 bg-green-100 text-green-700 py-4 rounded-xl text-2xl font-bold">
                             Your Current CrediScore: {currentScore}
@@ -159,7 +150,6 @@ export default function CreditScoreForm() {
                     )}
 
                     <div className="space-y-10">
-                        {/* Employment Details */}
                         <div className="border-b pb-10">
                             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                                 <MdWork className="text-3xl" /> Employment Details
@@ -244,7 +234,6 @@ export default function CreditScoreForm() {
                             </div>
                         </div>
 
-                        {/* Personal Details */}
                         <div className="border-b pb-10">
                             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                                 <MdPerson className="text-3xl" /> Personal Details
@@ -327,7 +316,6 @@ export default function CreditScoreForm() {
                             </div>
                         </div>
 
-                        {/* Financial Details */}
                         <div className="pb-10">
                             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                                 <MdCreditCard className="text-3xl" /> Financial Obligations
@@ -360,7 +348,6 @@ export default function CreditScoreForm() {
                             </div>
                         </div>
 
-                        {/* Submit */}
                         <button
                             onClick={handleSubmit}
                             disabled={!isValid || loading}

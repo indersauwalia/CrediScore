@@ -1,4 +1,3 @@
-// components/EMICalculator.jsx
 import { useState } from "react";
 import { MdCalculate } from "react-icons/md";
 

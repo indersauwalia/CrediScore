@@ -1,4 +1,3 @@
-// src/pages/IncomeVerificationForm.jsx
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -18,15 +17,12 @@ export default function IncomeVerificationForm() {
 
     const [step, setStep] = useState(1);
 
-    // Step 1
     const [panNumber, setPanNumber] = useState("");
     const [accountNumber, setAccountNumber] = useState("");
     const [ifscCode, setIfscCode] = useState("");
 
-    // Step 2
     const [proofFile, setProofFile] = useState(null);
 
-    // UI states
     const [loadingStep1, setLoadingStep1] = useState(false);
     const [step1Message, setStep1Message] = useState("");
     const [step1Success, setStep1Success] = useState(false);
@@ -34,7 +30,6 @@ export default function IncomeVerificationForm() {
     const [loadingStep2, setLoadingStep2] = useState(false);
     const [step2Message, setStep2Message] = useState("");
 
-    // Validation
     const isPanValid = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panNumber.toUpperCase());
     const isIfscValid = /^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifscCode.toUpperCase());
     const canVerifyStep1 = isPanValid && accountNumber && isIfscValid;
@@ -46,7 +41,6 @@ export default function IncomeVerificationForm() {
         }
     };
 
-    // Step 1: Verify PAN + Account No + IFSC
     const handleVerifyStep1 = async () => {
         if (!canVerifyStep1) return;
 
@@ -72,7 +66,6 @@ export default function IncomeVerificationForm() {
         }
     };
 
-    // Step 2: Final submit with proof upload
     const handleSubmitStep2 = async () => {
         if (!proofFile || !step1Success) {
             alert("Please complete Step 1 and upload a file");
@@ -96,7 +89,6 @@ export default function IncomeVerificationForm() {
             setStep2Message("Income verification completed successfully!");
             if (refreshUser) await refreshUser();
 
-            // Redirect to dashboard after success
             navigate("/dashboard");
         } catch (err) {
             setStep2Message(err.response?.data?.msg || "Upload failed. Please try again.");
@@ -122,7 +114,6 @@ export default function IncomeVerificationForm() {
                     <p className="text-xl text-gray-600 mt-4">Complete in 2 steps</p>
                 </div>
 
-                {/* Progress Bar */}
                 <div className="flex justify-center mb-12">
                     <div className="flex items-center gap-8">
                         <div
@@ -144,7 +135,6 @@ export default function IncomeVerificationForm() {
                 </div>
 
                 <div className="bg-white rounded-3xl shadow-2xl p-10">
-                    {/* Step 1 */}
                     {step === 1 && (
                         <div>
                             <h2 className="text-3xl font-bold text-gray-800 mb-10 text-center">
@@ -152,7 +142,6 @@ export default function IncomeVerificationForm() {
                             </h2>
 
                             <div className="space-y-10">
-                                {/* PAN */}
                                 <div>
                                     <label className="block text-lg font-medium text-gray-700 mb-3 flex items-center gap-2">
                                         <MdCreditCard className="text-2xl text-blue-600" /> PAN
@@ -173,7 +162,6 @@ export default function IncomeVerificationForm() {
                                     )}
                                 </div>
 
-                                {/* Account No & IFSC in one row */}
                                 <div className="grid md:grid-cols-2 gap-8">
                                     <div>
                                         <label className="block text-lg font-medium text-gray-700 mb-3 flex items-center gap-2">
@@ -248,7 +236,6 @@ export default function IncomeVerificationForm() {
                         </div>
                     )}
 
-                    {/* Step 2 */}
                     {step === 2 && (
                         <div className="text-center">
                             <h2 className="text-3xl font-bold text-gray-800 mb-10">

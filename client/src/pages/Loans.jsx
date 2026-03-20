@@ -17,11 +17,10 @@ export default function LoanPage() {
             if (user.verificationStatus !== "approved") {
                 refreshUser();
             }
-            fetchMyApplications(); // Fetch existing requests on load
+            fetchMyApplications();
         }
     }, []);
 
-    // Fetch existing loan requests to check for "Already Applied" status
     const fetchMyApplications = async () => {
         try {
             const res = await api.get("/loans/my-requests");
@@ -203,7 +202,6 @@ export default function LoanPage() {
                             const rate = getInterestRate(scheme);
                             const isRecommended = scheme.recommended && isEligible;
 
-                            // Check if this specific scheme has already been applied for
                             const existingRequest = myApplications.find(
                                 (app) =>
                                     app.loanType === scheme.title && app.requestStatus === "pending"

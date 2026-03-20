@@ -9,7 +9,6 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    // Initial load: This uses the loading spinner for the first app boot
     const loadUser = async () => {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -34,14 +33,13 @@ export const AuthProvider = ({ children }) => {
         loadUser();
     }, []);
 
-    // SILENT REFRESH: Updates user data without triggering the global loading spinner
     const refreshUser = async () => {
         const token = localStorage.getItem("token");
         if (!token) return;
 
         try {
             const res = await api.get("/auth/me");
-            setUser(res.data); // Update status (e.g., Pending -> Approved)
+            setUser(res.data); 
         } catch (err) {
             console.error("Silent refresh failed:", err);
         }

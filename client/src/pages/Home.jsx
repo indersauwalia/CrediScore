@@ -9,7 +9,6 @@ import { NavLink } from "react-router";
 export default function Home() {
     return (
         <div className="w-full min-h-screen bg-linear-to-b from-blue-50 to-white">
-            {/* NAVBAR - Fully Responsive */}
             <nav className="fixed top-2 sm:top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] sm:w-[90%] max-w-5xl">
                 <div className="bg-white/80 backdrop-blur-lg border border-white/30 rounded-full shadow-xl px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
                     <div className="flex items-center gap-2 sm:gap-3">
@@ -34,7 +33,6 @@ export default function Home() {
                 </div>
             </nav>
 
-            {/* HERO SECTION - Mobile First */}
             <section className="pt-24 sm:pt-32 pb-12 sm:pb-20 px-6 text-center">
                 <div className="max-w-4xl mx-auto">
                     <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight">
@@ -70,11 +68,9 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* IMAGE + TEXT SECTION - Super Responsive */}
             <section className="py-16 sm:py-20 px-6 bg-white">
                 <div className="max-w-6xl mx-auto">
                     <div className="grid md:grid-cols-2 gap-10 lg:gap-12 items-center">
-                        {/* Text - Mobile First */}
                         <div className="space-y-6 sm:space-y-7 order-2 md:order-1">
                             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 leading-tight">
                                 Know Before You Apply
@@ -105,7 +101,6 @@ export default function Home() {
                             </NavLink>
                         </div>
 
-                        {/* Single Image - Responsive */}
                         <div className="order-1 md:order-2 flex justify-center">
                             <div className="relative w-full max-w-sm sm:max-w-md">
                                 <img
@@ -122,10 +117,6 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Rest of your sections (Income USP, Features, etc.) remain the same */}
-            {/* Just make sure to add similar responsive classes if needed */}
-
-            {/* INCOME VERIFICATION USP */}
             <section className="py-16 sm:py-20 bg-linear-to-r from-blue-600 to-blue-800 text-white">
                 <div className="max-w-5xl mx-auto text-center px-6">
                     <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-8 leading-tight">
@@ -157,7 +148,6 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* FEATURES - Responsive Grid */}
             <section className="py-16 sm:py-20 px-6 bg-gray-50">
                 <div className="max-w-6xl mx-auto">
                     <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-12 sm:mb-16 text-gray-800">
@@ -194,7 +184,6 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* HOW IT WORKS - Responsive */}
             <section className="py-16 sm:py-20 px-6">
                 <div className="max-w-4xl mx-auto text-center">
                     <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-12 sm:mb-16 text-gray-800">
@@ -222,14 +211,10 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* FINAL CTA */}
             <section className="py-20 sm:py-24 px-6 bg-linear-to-r from-blue-700 to-green-600 text-white text-center">
                 <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-15">
                     Need Money Right Now?
                 </h2>
-                {/* <p className="text-xl sm:text-2xl mb-10 opacity-90">
-                    Join 50,000+ users who got instant loans
-                </p> */}
                 <NavLink to="/signup" className="bg-white text-blue-700 px-10 sm:px-12 py-5 sm:py-6 rounded-2xl text-xl sm:text-2xl font-bold shadow-2xl hover:scale-105 transition">
                     Apply Now →
                 </NavLink>
@@ -238,7 +223,6 @@ export default function Home() {
                 </p>
             </section>
 
-            {/* FOOTER */}
             <footer className="py-10 bg-gray-900 text-gray-400 text-center text-sm sm:text-base">
                 <p>© {new Date().getFullYear()} CrediScore • Income-First Digital Lending</p>
                 <p className="mt-2">Privacy Protected • RBI Guidelines Compliant</p>

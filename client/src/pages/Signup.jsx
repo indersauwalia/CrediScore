@@ -1,4 +1,3 @@
-// pages/Signup.jsx
 import React, { useState, useContext } from "react";
 import { NavLink } from "react-router";
 import { GiReceiveMoney } from "react-icons/gi";
@@ -38,14 +37,12 @@ export default function Signup() {
         if (!result.success) {
             alert(result.msg || "Signup failed. Please try again.");
         }
-        // On success, AuthContext will handle navigation to /dashboard
     };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex flex-col">
             <div className="flex-1 flex items-center justify-center px-4 py-8 overflow-y-auto">
                 <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden grid md:grid-cols-2">
-                    {/* LEFT: Branding */}
                     <div className="bg-gradient-to-br from-blue-600 to-green-600 p-6 md:p-8 text-white flex flex-col justify-center items-center text-center">
                         <div className="max-w-xs space-y-6">
                             <div className="flex items-center justify-center gap-3">
@@ -87,7 +84,6 @@ export default function Signup() {
                         </div>
                     </div>
 
-                    {/* RIGHT: Unified Signup Form */}
                     <div className="p-6 md:p-10 flex items-center justify-center">
                         <div className="w-full max-w-xs space-y-5">
                             <div className="text-center">
@@ -99,7 +95,6 @@ export default function Signup() {
                                 </p>
                             </div>
 
-                            {/* Full Name */}
                             <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600">
                                 <span className="px-4 py-4 bg-gray-50 flex items-center">
                                     <MdPerson />
@@ -113,7 +108,6 @@ export default function Signup() {
                                 />
                             </div>
 
-                            {/* Age */}
                             <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600">
                                 <span className="px-4 py-4 bg-gray-50 flex items-center">
                                     <MdCake />
@@ -131,7 +125,6 @@ export default function Signup() {
                                 />
                             </div>
 
-                            {/* Phone Number */}
                             <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600">
                                 <span className="px-4 py-4 bg-gray-50 flex items-center gap-1">
                                     <MdPhone /> +91
@@ -148,7 +141,6 @@ export default function Signup() {
                                 />
                             </div>
 
-                            {/* Email */}
                             <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600">
                                 <span className="px-4 py-4 bg-gray-50 flex items-center">
                                     <MdEmail />
@@ -162,7 +154,6 @@ export default function Signup() {
                                 />
                             </div>
 
-                            {/* Password */}
                             <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600">
                                 <span className="px-4 py-4 bg-gray-50 flex items-center">
                                     <MdLockOutline />
@@ -176,7 +167,6 @@ export default function Signup() {
                                 />
                             </div>
 
-                            {/* Create Account Button */}
                             <button
                                 onClick={handleSignup}
                                 disabled={!isValid}

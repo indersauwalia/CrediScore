@@ -1,4 +1,3 @@
-// pages/AdminDashboard.jsx
 import { useContext, useEffect, useState } from "react";
 import { GiReceiveMoney } from "react-icons/gi";
 import { MdPendingActions, MdVerified, MdClose } from "react-icons/md";
@@ -11,7 +10,6 @@ export default function AdminDashboard() {
     const [loanRequests, setLoanRequests] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Fetch pending requests
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -40,7 +38,6 @@ export default function AdminDashboard() {
         fetchData();
     }, []);
 
-    // Approve/Reject Income Verification
     const handleIncomeAction = async (requestId, action, note = "") => {
         try {
             const res = await fetch(`/api/admin/income-${action}/${requestId}`, {
@@ -66,7 +63,6 @@ export default function AdminDashboard() {
         }
     };
 
-    // Approve/Reject Loan Request
     const handleLoanAction = async (requestId, action, note = "") => {
         try {
             const res = await fetch(`/api/admin/loan-${action}/${requestId}`, {
@@ -100,10 +96,8 @@ export default function AdminDashboard() {
 
     return (
         <div className="min-h-screen bg-linear-to-br from-blue-50 to-green-50">
-            {/* Main Content */}
             <div className="pt-24 pb-12 px-6">
                 <div className="max-w-7xl mx-auto">
-                    {/* Page Title */}
                     <div className="text-center mb-12">
                         <h1 className="text-5xl font-extrabold text-gray-800 mb-4 flex items-center justify-center gap-4">
                             <MdPendingActions className="text-6xl text-blue-600" />
@@ -111,7 +105,6 @@ export default function AdminDashboard() {
                         </h1>
                     </div>
 
-                    {/* Tabs */}
                     <div className="flex justify-center gap-6 mb-10">
                         <button
                             onClick={() => setActiveTab("income")}
@@ -135,7 +128,6 @@ export default function AdminDashboard() {
                         </button>
                     </div>
 
-                    {/* Income Verification Table */}
                     {activeTab === "income" && (
                         <div className="bg-white rounded-3xl shadow-xl p-8">
                             <table className="min-w-full">
@@ -234,7 +226,6 @@ export default function AdminDashboard() {
                         </div>
                     )}
 
-                    {/* Loan Requests Table */}
                     {activeTab === "loans" && (
                         <div className="bg-white rounded-3xl shadow-xl p-8">
                             <table className="min-w-full">
@@ -272,7 +263,6 @@ export default function AdminDashboard() {
                                                 </div>
                                                 <div className="text-sm text-gray-500">
                                                     {req.user?.phone || "N/A"}
-                                                    {/* {console.log(req.income?.pan)} */}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-900">
@@ -329,7 +319,6 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
-            {/* Footer */}
             <footer className="py-10 text-center text-gray-500 text-sm border-t border-gray-200">
                 © {new Date().getFullYear()} CrediScore • Income-First Digital Lending • RBI
                 Guidelines Compliant

@@ -76,7 +76,6 @@ export default function Dashboard() {
         return "Build Your Score";
     };
 
-    // Status Badge Helper
     const getStatusBadge = (status) => {
         switch (status?.toLowerCase()) {
             case "approved":
@@ -103,12 +102,10 @@ export default function Dashboard() {
     return (
         <div className="h-screen flex flex-col overflow-hidden bg-linear-to-br from-blue-50 to-green-50">
 
-            {/* Main Content - Internal Scroll only */}
             <div className="flex-1 overflow-y-auto pt-8 pb-12 px-6 scrollbar-hide">
                 <div className="max-w-7xl mx-auto">
                     {hasCreditScore ? (
                         <>
-                            {/* CrediScore Card */}
                             <div
                                 className={`bg-linear-to-r ${getScoreColor()} rounded-3xl shadow-2xl p-8 text-white mb-10`}
                             >
@@ -134,7 +131,6 @@ export default function Dashboard() {
                                 </div>
                             </div>
 
-                            {/* Verification Status Banner */}
                             <div className="mb-8">
                                 {verificationStatus === "pending" && (
                                     <div className="bg-orange-50 border-2 border-orange-300 rounded-2xl p-6 flex items-center justify-between shadow-lg">
@@ -215,7 +211,6 @@ export default function Dashboard() {
                                 )}
                             </div>
 
-                            {/* Stats Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
                                 <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 flex items-center justify-between">
                                     <div>
@@ -246,7 +241,6 @@ export default function Dashboard() {
                                 </div>
                             </div>
 
-                            {/* Section: Active Loans / Applications */}
                             <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100 mb-12">
                                 <div className="flex items-center gap-3 mb-8">
                                     <MdPayments className="text-4xl text-blue-600" />
@@ -262,7 +256,6 @@ export default function Dashboard() {
                                                 key={loan._id}
                                                 className="bg-gray-50 rounded-2xl p-6 border border-gray-200 flex flex-col md:flex-row justify-between items-center gap-6 transition hover:border-blue-300"
                                             >
-                                                {/* 1. Icon & Title Section - Fixed Width for Alignment */}
                                                 <div className="flex items-center gap-6 md:w-1/3 shrink-0">
                                                     <div
                                                         className={`p-4 rounded-xl shrink-0 ${
@@ -283,7 +276,6 @@ export default function Dashboard() {
                                                     </div>
                                                 </div>
 
-                                                {/* 2. Stats Grid - Fixed Width and Flex-1 for Alignment */}
                                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-sm flex-1">
                                                     <div>
                                                         <p className="text-gray-400 font-bold uppercase">
@@ -311,7 +303,6 @@ export default function Dashboard() {
                                                     </div>
                                                 </div>
 
-                                                {/* 3. Status Section - Fixed Width for Alignment */}
                                                 <div className="w-full md:w-48 flex md:justify-end">
                                                     {getStatusBadge(loan.requestStatus)}
                                                 </div>
@@ -328,8 +319,6 @@ export default function Dashboard() {
                             </div>
                         </>
                     ) : (
-                        /* No Score Yet section - Kept exactly as provided */
-                        /* RESTORED FULL "NO SCORE YET" SECTION */
                         <div className="text-center h-full flex items-center justify-center">
                             <div className="max-w-3xl mx-auto">
                                 <MdCreditScore className="text-9xl text-gray-300 mx-auto mb-10" />
@@ -357,7 +346,6 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* Footer - Shrink-0 keeps it visible */}
             <footer className="shrink-0 py-6 text-center text-gray-400 text-xs border-t border-gray-200 bg-white">
                 © {new Date().getFullYear()} CrediScore • Digital Lending • RBI Guidelines Compliant
             </footer>
