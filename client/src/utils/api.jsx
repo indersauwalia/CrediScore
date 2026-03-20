@@ -6,7 +6,7 @@ if (!BASE_URL) {
 }
 
 const api = axios.create({
-    baseURL: BASE_URL,
+    baseURL: BASE_URL + "/api",
     withCredentials: true
 });
 
