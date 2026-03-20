@@ -1,7 +1,13 @@
 import axios from "axios";
+const BASE_URL = import.meta.env.VITE_API_URL;
+
+if (!BASE_URL) {
+    throw new Error("VITE_API_URL is not defined");
+}
 
 const api = axios.create({
-    baseURL: "http://localhost:3000/api",
+    baseURL: BASE_URL,
+    withCredentials: true
 });
 
 api.interceptors.request.use((config) => {
@@ -17,7 +23,7 @@ api.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401) {
             localStorage.removeItem("token");
-            window.location.href = "/login";
+            window.location.replace("/login");
         }
         return Promise.reject(error);
     }
