@@ -1,100 +1,107 @@
 import React, { useState, useContext, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router";
-import { MdWork, MdPerson, MdCreditCard, MdArrowBack } from "react-icons/md";
+import { useNavigate } from "react-router";
+import { 
+    MdWork, 
+    MdPerson, 
+    MdCreditCard, 
+    MdArrowBack, 
+    MdArrowForward, 
+    MdCheckCircle,
+    MdAccountBalanceWallet,
+    MdSchool,
+    MdHome,
+    MdFamilyRestroom
+} from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
 import api from "../utils/api";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function CreditScoreForm() {
-    const { user, logout, refreshUser } = useContext(AuthContext);
+    const { user, refreshUser } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    const [monthlyIncome, setMonthlyIncome] = useState("");
-    const [monthlyExpense, setMonthlyExpense] = useState("");
-    const [employmentType, setEmploymentType] = useState("salaried");
-    const [designation, setDesignation] = useState("");
-    const [totalExpYears, setTotalExpYears] = useState("");
-    const [currentExpYears, setCurrentExpYears] = useState("");
-    const [educationLevel, setEducationLevel] = useState("");
-    const [gender, setGender] = useState("");
-    const [maritalStatus, setMaritalStatus] = useState("");
-    const [dependents, setDependents] = useState("");
-    const [residenceType, setResidenceType] = useState("");
-    const [existingEmi, setExistingEmi] = useState("");
-    const [creditCardSpend, setCreditCardSpend] = useState("");
-
+    const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
-    const [hasIncomeProfile, setHasIncomeProfile] = useState(false);
-    const [currentScore, setCurrentScore] = useState(null);
 
-    const isValid =
-        monthlyIncome > 0 &&
-        monthlyExpense >= 0 &&
-        totalExpYears >= 0 &&
-        currentExpYears >= 0 &&
-        educationLevel &&
-        gender &&
-        maritalStatus &&
-        dependents >= 0 &&
-        residenceType &&
-        existingEmi >= 0;
+    // Form State
+    const [formData, setFormData] = useState({
+        monthlyIncome: "",
+        monthlyExpense: "",
+        employmentType: "salaried",
+        designation: "",
+        totalExpYears: "",
+        currentExpYears: "",
+        educationLevel: "",
+        gender: "",
+        maritalStatus: "",
+        dependents: "",
+        residenceType: "",
+        existingEmi: "",
+        creditCardSpend: ""
+    });
 
     useEffect(() => {
         if (!user) return;
         const income = user.income;
-
         if (income) {
-            setHasIncomeProfile(true);
-            setCurrentScore(income.crediScore || null);
-            setMonthlyIncome(income.monthlyIncome?.toString() || "");
-            setMonthlyExpense(income.monthlyExpense?.toString() || "");
-            setEmploymentType(income.employmentType || "salaried");
-            setDesignation(income.designation || "");
-            setTotalExpYears(income.totalExpYears?.toString() || "");
-            setCurrentExpYears(income.currentExpYears?.toString() || "");
-            setDependents(income.dependents?.toString() || "");
-            setResidenceType(income.residenceType || "");
-            setExistingEmi(income.existingEmi?.toString() || "");
-            setCreditCardSpend(income.creditCardSpend?.toString() || "");
+            setFormData({
+                monthlyIncome: income.monthlyIncome?.toString() || "",
+                monthlyExpense: income.monthlyExpense?.toString() || "",
+                employmentType: income.employmentType || "salaried",
+                designation: income.designation || "",
+                totalExpYears: income.totalExpYears?.toString() || "",
+                currentExpYears: income.currentExpYears?.toString() || "",
+                dependents: income.dependents?.toString() || "",
+                residenceType: income.residenceType || "",
+                existingEmi: income.existingEmi?.toString() || "",
+                creditCardSpend: income.creditCardSpend?.toString() || "",
+                gender: user.gender || "",
+                maritalStatus: user.maritalStatus || "",
+                educationLevel: user.educationLevel || ""
+            });
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                gender: user.gender || "",
+                maritalStatus: user.maritalStatus || "",
+                educationLevel: user.educationLevel || ""
+            }));
         }
-
-        setGender(user.gender || "");
-        setMaritalStatus(user.maritalStatus || "");
-        setEducationLevel(user.educationLevel || "");
     }, [user]);
 
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const isStep1Valid = formData.gender && formData.maritalStatus && formData.educationLevel && formData.residenceType;
+    const isStep2Valid = formData.monthlyIncome > 0 && formData.employmentType && formData.totalExpYears >= 0;
+    const isStep3Valid = formData.monthlyExpense >= 0 && formData.existingEmi >= 0;
+
+    const nextStep = () => setStep(s => s + 1);
+    const prevStep = () => setStep(s => s - 1);
+
     const handleSubmit = async () => {
-        if (!isValid || loading) return;
         setLoading(true);
         setMessage("");
 
-        const data = {
-            monthlyIncome: Number(monthlyIncome),
-            monthlyExpense: Number(monthlyExpense),
-            employmentType,
-            designation,
-            totalExpYears: Number(totalExpYears),
-            currentExpYears: Number(currentExpYears),
-            dependents: Number(dependents || 0),
-            residenceType,
-            existingEmi: Number(existingEmi),
-            creditCardSpend: Number(creditCardSpend || 0),
-            educationLevel,
-            gender,
-            maritalStatus,
+        const submissionData = {
+            ...formData,
+            monthlyIncome: Number(formData.monthlyIncome),
+            monthlyExpense: Number(formData.monthlyExpense),
+            totalExpYears: Number(formData.totalExpYears),
+            currentExpYears: Number(formData.currentExpYears || 0),
+            dependents: Number(formData.dependents || 0),
+            existingEmi: Number(formData.existingEmi || 0),
+            creditCardSpend: Number(formData.creditCardSpend || 0),
         };
 
         try {
-            const res = await api.post("/credit/submit-income", data);
-            setHasIncomeProfile(true);
-            setCurrentScore(res.data.crediScore);
-            setMessage(
-                `Success! Profile ${hasIncomeProfile ? "updated" : "created"}. New CrediScore: ${
-                    res.data.crediScore
-                }`
-            );
+            const res = await api.post("/credit/submit-income", submissionData);
+            setMessage(`Success! New CrediScore: ${res.data.crediScore}`);
             if (refreshUser) await refreshUser();
-            setTimeout(() => navigate("/dashboard"), 2000);
+            setTimeout(() => navigate("/dashboard"), 1500);
         } catch (err) {
             setMessage(err.response?.data?.msg || "Submission failed. Please try again.");
         } finally {
@@ -102,286 +109,244 @@ export default function CreditScoreForm() {
         }
     };
 
-    if (!user) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-green-50">
-                <p className="text-xl text-gray-700">Loading your profile...</p>
-            </div>
-        );
-    }
+    const steps = [
+        { id: 1, title: "Personal", icon: <MdPerson /> },
+        { id: 2, title: "Employment", icon: <MdWork /> },
+        { id: 3, title: "Financial", icon: <MdAccountBalanceWallet /> }
+    ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-8 px-4">
-            <div className="max-w-3xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
-                    <NavLink
-                        to="/dashboard"
-                        className="flex items-center gap-2 text-blue-600 hover:underline font-medium text-lg"
-                    >
-                        <MdArrowBack className="text-2xl" />
-                        Back to Dashboard
-                    </NavLink>
-                    <button
-                        onClick={logout}
-                        className="text-red-600 hover:underline font-medium text-lg"
-                    >
-                        Logout
-                    </button>
+        <div className="flex-grow py-12 px-4 relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                <div className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] bg-blue-100/40 rounded-full blur-[100px]" />
+                <div className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] bg-emerald-100/40 rounded-full blur-[100px]" />
+                <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+            </div>
+
+            <div className="max-w-2xl mx-auto relative z-10">
+                <button 
+                    onClick={() => navigate("/dashboard")}
+                    className="flex items-center gap-2 text-slate-400 hover:text-slate-900 font-black uppercase tracking-widest text-[10px] mb-8 transition-all"
+                >
+                    <MdArrowBack size={16} /> Exit Calculation
+                </button>
+
+                {/* Progress Stepper */}
+                <div className="flex items-center justify-between mb-12 px-4">
+                    {steps.map((s, i) => (
+                        <React.Fragment key={s.id}>
+                            <div className="flex flex-col items-center gap-2">
+                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm ${
+                                    step === s.id ? "bg-slate-900 text-white scale-110 shadow-xl" : step > s.id ? "bg-emerald-500 text-white" : "bg-white text-slate-300 border border-slate-200"
+                                }`}>
+                                    {step > s.id ? <MdCheckCircle size={20} /> : s.id}
+                                </div>
+                                <span className={`text-[9px] font-black uppercase tracking-widest ${step === s.id ? "text-slate-900" : "text-slate-300"}`}>
+                                    {s.title}
+                                </span>
+                            </div>
+                            {i < steps.length - 1 && (
+                                <div className={`flex-1 h-[2px] mx-4 -mt-6 transition-all duration-500 ${step > s.id ? "bg-emerald-500" : "bg-slate-200"}`} />
+                            )}
+                        </React.Fragment>
+                    ))}
                 </div>
 
-                <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12">
-                    <div className="text-center mb-10">
-                        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800">
-                            {hasIncomeProfile
-                                ? "Update Your Income Profile"
-                                : "Complete Your Income Profile"}
-                        </h1>
-                        <p className="text-lg text-gray-600 mt-3">
-                            {hasIncomeProfile
-                                ? "Keep your details up-to-date for the most accurate CrediScore"
-                                : "Share your financial details to calculate your income-based CrediScore"}
-                        </p>
-                    </div>
+                <div className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden">
+                    <div className="p-8 md:p-12">
+                        <AnimatePresence mode="wait">
+                            {step === 1 && (
+                                <motion.div 
+                                    key="step1"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-8"
+                                >
+                                    <div className="text-center md:text-left mb-10">
+                                        <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Profile Baseline</h2>
+                                        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Foundational demographic information</p>
+                                    </div>
 
-                    {hasIncomeProfile && currentScore !== null && (
-                        <div className="text-center mb-8 bg-green-100 text-green-700 py-4 rounded-xl text-2xl font-bold">
-                            Your Current CrediScore: {currentScore}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                <MdPerson className="text-blue-500" /> Gender
+                                            </label>
+                                            <select name="gender" value={formData.gender} onChange={handleChange} className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all">
+                                                <option value="">Select Gender</option>
+                                                <option value="male">Male</option>
+                                                <option value="female">Female</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                <MdFamilyRestroom className="text-indigo-500" /> Marital Status
+                                            </label>
+                                            <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all">
+                                                <option value="">Select Status</option>
+                                                <option value="single">Single</option>
+                                                <option value="married">Married</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                <MdSchool className="text-emerald-500" /> Education
+                                            </label>
+                                            <select name="educationLevel" value={formData.educationLevel} onChange={handleChange} className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all">
+                                                <option value="">Select Level</option>
+                                                <option value="graduate">Graduate</option>
+                                                <option value="postgraduate">Post Graduate</option>
+                                                <option value="professional">Professional Degree</option>
+                                                <option value="12th">12th Pass</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                <MdHome className="text-amber-500" /> Residence
+                                            </label>
+                                            <select name="residenceType" value={formData.residenceType} onChange={handleChange} className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all">
+                                                <option value="">Select Type</option>
+                                                <option value="owned">Owned</option>
+                                                <option value="rented">Rented</option>
+                                                <option value="family">Living with Family</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {step === 2 && (
+                                <motion.div 
+                                    key="step2"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-8"
+                                >
+                                    <div className="text-center md:text-left mb-10">
+                                        <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Economic Capacity</h2>
+                                        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Employment and recurring income details</p>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                    Monthly Income (₹)
+                                                </label>
+                                                <input name="monthlyIncome" type="number" value={formData.monthlyIncome} onChange={handleChange} placeholder="e.g. 50000" className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                    Employment Type
+                                                </label>
+                                                <select name="employmentType" value={formData.employmentType} onChange={handleChange} className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all">
+                                                    <option value="salaried">Salaried</option>
+                                                    <option value="self-employed">Self-Employed</option>
+                                                    <option value="business">Business Owner</option>
+                                                    <option value="freelancer">Freelancer</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                    Total Experience (Years)
+                                                </label>
+                                                <input name="totalExpYears" type="number" value={formData.totalExpYears} onChange={handleChange} placeholder="e.g. 5" className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                    Current Job (Years)
+                                                </label>
+                                                <input name="currentExpYears" type="number" value={formData.currentExpYears} onChange={handleChange} placeholder="e.g. 2" className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {step === 3 && (
+                                <motion.div 
+                                    key="step3"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-8"
+                                >
+                                    <div className="text-center md:text-left mb-10">
+                                        <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Financial Discipline</h2>
+                                        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Existing obligations and credit behavior</p>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                    Monthly Expenses (₹)
+                                                </label>
+                                                <input name="monthlyExpense" type="number" value={formData.monthlyExpense} onChange={handleChange} placeholder="e.g. 20000" className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                    Existing EMIs (₹)
+                                                </label>
+                                                <input name="existingEmi" type="number" value={formData.existingEmi} onChange={handleChange} placeholder="0 if none" className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                <MdCreditCard className="text-rose-500" /> Avg Credit Card Spend (₹)
+                                            </label>
+                                            <input name="creditCardSpend" type="number" value={formData.creditCardSpend} onChange={handleChange} placeholder="Monthly average" className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all" />
+                                            <p className="text-[8px] font-bold text-slate-300 uppercase">Calculated based on previous 3-6 months statement average</p>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* Navigation Buttons */}
+                        <div className="mt-12 flex gap-4">
+                            {step > 1 && (
+                                <button 
+                                    onClick={prevStep}
+                                    className="flex-1 py-4 bg-slate-100 text-slate-900 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-slate-200 transition-all shadow-sm active:scale-95"
+                                >
+                                    Previous
+                                </button>
+                            )}
+                            <button 
+                                onClick={step === 3 ? handleSubmit : nextStep}
+                                disabled={loading || (step === 1 && !isStep1Valid) || (step === 2 && !isStep2Valid) || (step === 3 && !isStep3Valid)}
+                                className={`flex-[2] py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all shadow-xl flex items-center justify-center gap-2 active:scale-95 ${
+                                    loading || (step === 1 && !isStep1Valid) || (step === 2 && !isStep2Valid) || (step === 3 && !isStep3Valid)
+                                    ? "bg-slate-100 text-slate-300 cursor-not-allowed"
+                                    : "bg-slate-900 text-white hover:bg-blue-600 shadow-blue-200"
+                                }`}
+                            >
+                                {loading ? "Analyzing..." : step === 3 ? "Generate Score" : "Continue"}
+                                {step < 3 && <MdArrowForward size={14} />}
+                            </button>
                         </div>
-                    )}
-
-                    <div className="space-y-10">
-                        <div className="border-b pb-10">
-                            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                                <MdWork className="text-3xl" /> Employment Details
-                            </h2>
-                            <div className="grid md:grid-cols-2 gap-8">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Monthly Income (₹)
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={monthlyIncome}
-                                        onChange={(e) => setMonthlyIncome(e.target.value)}
-                                        placeholder="e.g., 50000"
-                                        className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Monthly Expense (₹)
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={monthlyExpense}
-                                        onChange={(e) => setMonthlyExpense(e.target.value)}
-                                        placeholder="e.g., 30000"
-                                        className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Employment Type
-                                    </label>
-                                    <select
-                                        value={employmentType}
-                                        onChange={(e) => setEmploymentType(e.target.value)}
-                                        className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
-                                    >
-                                        <option value="">Select Type</option>
-                                        <option value="salaried">Salaried</option>
-                                        <option value="self-employed">Self-Employed</option>
-                                        <option value="business">Business Owner</option>
-                                        <option value="freelancer">Freelancer</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Designation/Role
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={designation}
-                                        onChange={(e) => setDesignation(e.target.value)}
-                                        placeholder="e.g., Software Engineer"
-                                        className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Total Work Experience (Years)
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={totalExpYears}
-                                        onChange={(e) => setTotalExpYears(e.target.value)}
-                                        placeholder="e.g., 5"
-                                        className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Current Job Experience (Years)
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={currentExpYears}
-                                        onChange={(e) => setCurrentExpYears(e.target.value)}
-                                        placeholder="e.g., 2"
-                                        className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="border-b pb-10">
-                            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                                <MdPerson className="text-3xl" /> Personal Details
-                            </h2>
-                            <div className="grid md:grid-cols-2 gap-8">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Gender
-                                    </label>
-                                    <select
-                                        value={gender}
-                                        onChange={(e) => setGender(e.target.value)}
-                                        className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
-                                    >
-                                        <option value="">Select Gender</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                        <option value="other">Other</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Marital Status
-                                    </label>
-                                    <select
-                                        value={maritalStatus}
-                                        onChange={(e) => setMaritalStatus(e.target.value)}
-                                        className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
-                                    >
-                                        <option value="">Select Status</option>
-                                        <option value="single">Single</option>
-                                        <option value="married">Married</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Number of Dependents
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={dependents}
-                                        onChange={(e) => setDependents(e.target.value)}
-                                        placeholder="e.g., 2"
-                                        className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Residence Type
-                                    </label>
-                                    <select
-                                        value={residenceType}
-                                        onChange={(e) => setResidenceType(e.target.value)}
-                                        className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
-                                    >
-                                        <option value="">Select Type</option>
-                                        <option value="owned">Owned</option>
-                                        <option value="rented">Rented</option>
-                                        <option value="family">Living with Family</option>
-                                    </select>
-                                </div>
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Highest Education
-                                    </label>
-                                    <select
-                                        value={educationLevel}
-                                        onChange={(e) => setEducationLevel(e.target.value)}
-                                        className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
-                                    >
-                                        <option value="">Select Education</option>
-                                        <option value="below10">Below 10th</option>
-                                        <option value="10th">10th Pass</option>
-                                        <option value="12th">12th Pass</option>
-                                        <option value="graduate">Graduate</option>
-                                        <option value="postgraduate">Post Graduate</option>
-                                        <option value="professional">Professional Degree</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="pb-10">
-                            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                                <MdCreditCard className="text-3xl" /> Financial Obligations
-                            </h2>
-                            <div className="grid md:grid-cols-2 gap-8">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Existing Monthly EMI (₹)
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={existingEmi}
-                                        onChange={(e) => setExistingEmi(e.target.value)}
-                                        placeholder="e.g., 10000 (0 if none)"
-                                        className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Avg Monthly Credit Card Spend (₹)
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={creditCardSpend}
-                                        onChange={(e) => setCreditCardSpend(e.target.value)}
-                                        placeholder="e.g., 5000 (0 if none)"
-                                        className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 outline-none text-lg"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={handleSubmit}
-                            disabled={!isValid || loading}
-                            className={`w-full py-5 rounded-xl font-bold text-xl transition-all shadow-lg ${
-                                isValid && !loading
-                                    ? "bg-gradient-to-r from-blue-600 to-green-600 text-white hover:scale-105"
-                                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                            }`}
-                        >
-                            {loading
-                                ? "Processing..."
-                                : hasIncomeProfile
-                                ? "Update Profile & Recalculate CrediScore"
-                                : "Submit Profile & Calculate CrediScore"}
-                        </button>
 
                         {message && (
-                            <div
-                                className={`text-center text-lg font-bold py-4 rounded-xl mt-6 ${
-                                    message.includes("Success")
-                                        ? "bg-green-100 text-green-700"
-                                        : "bg-red-100 text-red-700"
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className={`mt-6 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-center border ${
+                                    message.includes("Success") ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-rose-50 text-rose-600 border-rose-100"
                                 }`}
                             >
                                 {message}
-                                {message.includes("Success") && (
-                                    <p className="text-sm mt-2 text-green-600">
-                                        Redirecting to dashboard...
-                                    </p>
-                                )}
-                            </div>
+                            </motion.div>
                         )}
                     </div>
                 </div>
+
             </div>
         </div>
     );

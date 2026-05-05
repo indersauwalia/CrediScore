@@ -1,358 +1,337 @@
 import { useContext, useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router";
-import { GiReceiveMoney, GiTrophy } from "react-icons/gi";
-import { FaArrowTrendUp } from "react-icons/fa6";
-import {
+import { useNavigate } from "react-router";
+import { GiReceiveMoney, GiTrophy, GiProgression } from "react-icons/gi";
+import { 
+    MdTrendingUp, 
+    MdArrowForward, 
+    MdRefresh, 
+    MdVerified, 
+    MdInfoOutline, 
+    MdLightbulb, 
     MdAccountBalanceWallet,
-    MdHistory,
-    MdCreditScore,
-    MdArrowForward,
-    MdVerified,
-    MdWarning,
-    MdError,
-    MdReceiptLong,
-    MdPayments,
-    MdCheckCircle,
-    MdCancel,
-    MdHourglassTop,
+    MdSecurity,
+    MdCalendarToday,
+    MdKeyboardArrowDown,
+    MdKeyboardArrowUp,
+    MdCheckCircle
 } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
 import api from "../utils/api";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Dashboard() {
-    const { user, logout } = useContext(AuthContext);
-    const [loanRequests, setLoanRequests] = useState([]); // State for loan history
+    const { user, refreshUser } = useContext(AuthContext);
     const navigate = useNavigate();
+    const [stats, setStats] = useState(null);
+    const [loadingData, setLoadingData] = useState(true);
+    const [showScoreAnalysis, setShowScoreAnalysis] = useState(false);
 
     useEffect(() => {
         if (!user) {
-            navigate("/", { replace: true });
-        } 
-        else if(user.role === "admin"){
-            navigate("/admin");
-        } 
-        else {
-            fetchLoanRequests();
+            navigate("/login");
+        } else {
+            fetchDashboardStats();
         }
-    }, [user, navigate]);
+    }, [user]);
 
-    const fetchLoanRequests = async () => {
+    const fetchDashboardStats = async () => {
+        setLoadingData(true);
         try {
-            const res = await api.get("/loans/my-requests");
-            setLoanRequests(res.data || []);
+            const res = await api.get("/credit/stats");
+            setStats(res.data);
         } catch (err) {
-            console.error("Error fetching loans:", err);
+            console.error(err);
+        } finally {
+            setLoadingData(false);
         }
     };
 
     if (!user) return null;
 
-    const crediScore = user.crediScore || 0;
-    const hasCreditScore = crediScore > 0;
-    const verificationStatus = user.verificationStatus || "not-started";
-
-    const formatCurrency = (amount) => {
-        if (!amount) return "₹0";
-        return new Intl.NumberFormat("en-IN", {
-            style: "currency",
-            currency: "INR",
-            minimumFractionDigits: 0,
-        }).format(amount);
+    const formatCurrency = (val) => {
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0
+        }).format(val || 0);
     };
 
-    const getScoreColor = () => {
-        if (crediScore >= 750) return "from-green-500 to-emerald-600";
-        if (crediScore >= 700) return "from-emerald-500 to-teal-600";
-        if (crediScore >= 650) return "from-blue-500 to-cyan-600";
-        if (crediScore >= 600) return "from-yellow-500 to-amber-600";
-        return "from-gray-400 to-gray-600";
-    };
-
-    const getScoreLabel = () => {
-        if (crediScore >= 750) return "Excellent";
-        if (crediScore >= 700) return "Very Good";
-        if (crediScore >= 650) return "Good";
-        if (crediScore >= 600) return "Fair";
-        return "Build Your Score";
-    };
-
-    const getStatusBadge = (status) => {
-        switch (status?.toLowerCase()) {
-            case "approved":
-                return (
-                    <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700 font-bold border border-green-200">
-                        <MdCheckCircle /> Approved
-                    </div>
-                );
-            case "rejected":
-                return (
-                    <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-100 text-red-700 font-bold border border-red-200">
-                        <MdCancel /> Rejected
-                    </div>
-                );
-            default:
-                return (
-                    <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 text-amber-700 font-bold border border-amber-200">
-                        <MdHourglassTop className="animate-pulse" /> Pending
-                    </div>
-                );
-        }
-    };
+    const crediScore = stats?.crediScore || 0;
+    const verificationStatus = user.verificationStatus;
 
     return (
-        <div className="h-screen flex flex-col overflow-hidden bg-linear-to-br from-blue-50 to-green-50">
-
-            <div className="flex-1 overflow-y-auto pt-8 pb-12 px-6 scrollbar-hide">
-                <div className="max-w-7xl mx-auto">
-                    {hasCreditScore ? (
-                        <>
-                            <div
-                                className={`bg-linear-to-r ${getScoreColor()} rounded-3xl shadow-2xl p-8 text-white mb-10`}
-                            >
-                                <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                                    <div>
-                                        <h2 className="text-2xl font-medium mb-2">
-                                            Your CrediScore
-                                        </h2>
-                                        <div className="text-7xl font-extrabold">{crediScore}</div>
-                                        <p className="text-2xl mt-3 opacity-95">
-                                            {getScoreLabel()} •{" "}
-                                            {verificationStatus === "approved"
-                                                ? "Income Verified"
-                                                : "Basic Scoring"}
-                                        </p>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-8">
-                                            <GiTrophy className="text-7xl mx-auto mb-3" />
-                                            <p className="text-xl font-bold">Strong Profile!</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mb-8">
-                                {verificationStatus === "pending" && (
-                                    <div className="bg-orange-50 border-2 border-orange-300 rounded-2xl p-6 flex items-center justify-between shadow-lg">
-                                        <div className="flex items-center gap-4">
-                                            <MdWarning className="text-5xl text-orange-600" />
-                                            <div>
-                                                <h3 className="text-2xl font-bold text-orange-800">
-                                                    Income Verification Pending
-                                                </h3>
-                                                <p className="text-lg text-orange-700 mt-1">
-                                                    Your verification is under review. You'll be
-                                                    notified once approved.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {verificationStatus === "approved" && (
-                                    <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-6 flex items-center justify-between shadow-lg">
-                                        <div className="flex items-center gap-4">
-                                            <MdVerified className="text-5xl text-green-600" />
-                                            <div>
-                                                <h3 className="text-2xl font-bold text-green-800">
-                                                    Income Verified
-                                                </h3>
-                                                <p className="text-lg text-green-700 mt-1">
-                                                    Your income has been successfully verified.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {verificationStatus === "not-started" && (
-                                    <div className="bg-orange-50 border-2 border-orange-300 rounded-2xl p-6 flex items-center justify-between shadow-lg">
-                                        <div className="flex items-center gap-4">
-                                            <MdWarning className="text-5xl text-orange-600" />
-                                            <div>
-                                                <h3 className="text-2xl font-bold text-orange-800">
-                                                    Complete Income Verification
-                                                </h3>
-                                                <p className="text-lg text-orange-700 mt-1">
-                                                    Verify your income to unlock higher credit
-                                                    limits and better scoring.
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <NavLink to="/verify-income">
-                                            <button className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-md transition flex items-center gap-3">
-                                                Verify Income Now
-                                                <MdArrowForward className="text-2xl" />
-                                            </button>
-                                        </NavLink>
-                                    </div>
-                                )}
-
-                                {verificationStatus === "rejected" && (
-                                    <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-6 flex items-center justify-between shadow-lg">
-                                        <div className="flex items-center gap-4">
-                                            <MdError className="text-5xl text-red-600" />
-                                            <div>
-                                                <h3 className="text-2xl font-bold text-red-800">
-                                                    Verification Rejected
-                                                </h3>
-                                                <p className="text-lg text-red-700 mt-1">
-                                                    Your submitted documents were not approved.
-                                                    Please try again.
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <NavLink to="/verify-income">
-                                            <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-md transition">
-                                                Re-submit Verification
-                                            </button>
-                                        </NavLink>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-                                <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-lg">Total Credit Limit</p>
-                                        <p className="text-4xl font-bold text-gray-800 mt-2">
-                                            {formatCurrency(user.creditLimit || 0)}
-                                        </p>
-                                    </div>
-                                    <MdAccountBalanceWallet className="text-6xl text-blue-600 opacity-80" />
-                                </div>
-                                <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-lg">Remaining Limit</p>
-                                        <p className="text-4xl font-bold text-green-600 mt-2">
-                                            {formatCurrency(user.remainingLimit || 0)}
-                                        </p>
-                                    </div>
-                                    <FaArrowTrendUp className="text-6xl text-green-600 opacity-80" />
-                                </div>
-                                <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-lg">Loan Requests</p>
-                                        <p className="text-4xl font-bold text-indigo-600 mt-2">
-                                            {loanRequests.length}
-                                        </p>
-                                    </div>
-                                    <MdReceiptLong className="text-6xl text-indigo-600 opacity-80" />
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100 mb-12">
-                                <div className="flex items-center gap-3 mb-8">
-                                    <MdPayments className="text-4xl text-blue-600" />
-                                    <h3 className="text-3xl font-extrabold text-gray-800">
-                                        Your Loan Applications
-                                    </h3>
-                                </div>
-
-                                {loanRequests.length > 0 ? (
-                                    <div className="grid grid-cols-1 gap-4">
-                                        {loanRequests.map((loan) => (
-                                            <div
-                                                key={loan._id}
-                                                className="bg-gray-50 rounded-2xl p-6 border border-gray-200 flex flex-col md:flex-row justify-between items-center gap-6 transition hover:border-blue-300"
-                                            >
-                                                <div className="flex items-center gap-6 md:w-1/3 shrink-0">
-                                                    <div
-                                                        className={`p-4 rounded-xl shrink-0 ${
-                                                            loan.requestStatus === "rejected"
-                                                                ? "bg-red-100 text-red-600"
-                                                                : "bg-blue-100 text-blue-600"
-                                                        }`}
-                                                    >
-                                                        <GiReceiveMoney className="text-3xl" />
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <h4 className="text-xl font-bold text-gray-800 truncate">
-                                                            {loan.loanType}
-                                                        </h4>
-                                                        <p className="text-gray-500 font-mono text-xs">
-                                                            ID: {loan._id.slice(-8).toUpperCase()}
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-sm flex-1">
-                                                    <div>
-                                                        <p className="text-gray-400 font-bold uppercase">
-                                                            Amount
-                                                        </p>
-                                                        <p className="text-lg font-bold">
-                                                            {formatCurrency(loan.requestedAmount)}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-gray-400 font-bold uppercase">
-                                                            Tenure
-                                                        </p>
-                                                        <p className="text-lg font-bold">
-                                                            {loan.tenure} Mo.
-                                                        </p>
-                                                    </div>
-                                                    <div className="hidden md:block">
-                                                        <p className="text-gray-400 font-bold uppercase">
-                                                            Interest
-                                                        </p>
-                                                        <p className="text-lg font-bold text-green-600">
-                                                            {loan.interestRate}%
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="w-full md:w-48 flex md:justify-end">
-                                                    {getStatusBadge(loan.requestStatus)}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-3xl">
-                                        <p className="text-xl text-gray-500">
-                                            No loan applications found.
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        </>
-                    ) : (
-                        <div className="text-center h-full flex items-center justify-center">
-                            <div className="max-w-3xl mx-auto">
-                                <MdCreditScore className="text-9xl text-gray-300 mx-auto mb-10" />
-                                <h2 className="text-5xl font-extrabold text-gray-800 mb-8">
-                                    Unlock Your CrediScore Now
-                                </h2>
-                                <p className="text-2xl text-gray-600 mb-12 leading-relaxed max-w-2xl mx-auto">
-                                    Complete your credit profile with income, employment, and KYC
-                                    details to get your real, income-based CrediScore instantly.
-                                    <br />
-                                    No CIBIL or traditional credit history required.
-                                </p>
-                                <NavLink to="/credit-form">
-                                    <button className="bg-linear-to-r from-blue-600 to-green-600 text-white px-16 py-8 rounded-3xl text-3xl font-bold shadow-2xl hover:scale-110 transition flex items-center gap-4 mx-auto">
-                                        Complete Credit Profile
-                                        <MdArrowForward className="text-4xl" />
-                                    </button>
-                                </NavLink>
-                                <p className="text-lg text-gray-500 mt-10">
-                                    Takes less than 3 minutes • 100% secure • Instant results
-                                </p>
-                            </div>
-                        </div>
-                    )}
-                </div>
+        <div className="flex-grow p-4 md:p-6 pb-6 relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-100/30 rounded-full blur-[100px]" />
+                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-100/30 rounded-full blur-[100px]" />
             </div>
 
-            <footer className="shrink-0 py-6 text-center text-gray-400 text-xs border-t border-gray-200 bg-white">
-                © {new Date().getFullYear()} CrediScore • Digital Lending • RBI Guidelines Compliant
-            </footer>
+            <div className="max-w-6xl mx-auto space-y-6 relative z-10">
+                
+                {/* Header Section */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/50 backdrop-blur-sm p-4 rounded-2xl border border-white/50">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl font-black text-slate-900 uppercase tracking-tighter">
+                                Overview
+                            </h1>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{user.name}</span>
+                            {verificationStatus === "approved" && (
+                                <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-md text-[8px] font-black uppercase flex items-center gap-1">
+                                    <MdVerified size={10} /> Verified
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <button 
+                            onClick={fetchDashboardStats}
+                            className="p-2.5 bg-white rounded-xl border border-slate-100 text-slate-400 hover:text-blue-600 transition-all shadow-sm active:scale-95"
+                        >
+                            <MdRefresh size={18} className={loadingData ? "animate-spin" : ""} />
+                        </button>
+                    </div>
+                </div>
+
+                {loadingData ? (
+                    <div className="py-20 text-center text-slate-300 text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">
+                        Updating account status...
+                    </div>
+                ) : !stats?.hasProfile ? (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-slate-900 rounded-[2.5rem] p-12 text-center space-y-8 shadow-2xl relative overflow-hidden"
+                    >
+                        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+                        <div className="relative z-10">
+                            <div className="w-20 h-20 bg-blue-500 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-blue-500/20">
+                                <GiReceiveMoney className="text-white text-4xl" />
+                            </div>
+                            <h2 className="text-4xl font-black text-white tracking-tighter leading-none mb-4">Complete Your<br /> Credit Profile</h2>
+                            <p className="text-slate-400 text-sm max-w-md mx-auto font-medium">Unlock up to ₹5,00,000 in credit by completing your financial assessment.</p>
+                            <button 
+                                onClick={() => navigate("/credit-form")}
+                                className="mt-10 px-10 py-5 bg-white text-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-400 hover:text-white transition-all shadow-2xl active:scale-95"
+                            >
+                                Get Started
+                            </button>
+                        </div>
+                    </motion.div>
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        
+                        {/* LEFT COLUMN (4/12) */}
+                        <div className="lg:col-span-4 space-y-6">
+                            
+                            {/* Score Card */}
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.98 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-xl shadow-slate-200/50 relative overflow-hidden group"
+                            >
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-700" />
+                                <div className="relative z-10 space-y-6">
+                                    <div className="flex justify-between items-center">
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">CrediScore</p>
+                                        <MdTrendingUp className="text-blue-500" />
+                                    </div>
+                                    <div className="flex items-baseline justify-center gap-1 py-4">
+                                        <span className="text-7xl font-black text-slate-900 tracking-tighter">{crediScore}</span>
+                                        <span className="text-xs font-black text-slate-300 uppercase tracking-widest">Pts</span>
+                                    </div>
+                                    <div className={`w-full py-2 rounded-xl text-[9px] font-black uppercase tracking-widest text-center border ${
+                                        stats.riskLevel === 'Excellent' || stats.riskLevel === 'Good' 
+                                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
+                                        : 'bg-amber-50 text-amber-600 border-amber-100'
+                                    }`}>
+                                        Status: {stats.riskLevel}
+                                    </div>
+                                    
+                                    {/* Dropdown for Score Factors */}
+                                    <div className="pt-2">
+                                        <button 
+                                            onClick={() => setShowScoreAnalysis(!showScoreAnalysis)}
+                                            className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors group/btn"
+                                        >
+                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Score Analysis</span>
+                                            {showScoreAnalysis ? <MdKeyboardArrowUp className="text-slate-400" /> : <MdKeyboardArrowDown className="text-slate-400" />}
+                                        </button>
+                                        <AnimatePresence>
+                                            {showScoreAnalysis && (
+                                                <motion.div 
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    className="overflow-hidden"
+                                                >
+                                                    <div className="pt-4 space-y-3">
+                                                        {stats.breakdown.map((item, i) => (
+                                                            <div key={i} className="flex justify-between items-center px-2">
+                                                                <span className="text-[9px] font-bold text-slate-400 uppercase">{item.factor}</span>
+                                                                <span className={`text-[9px] font-black ${item.score >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                                                    {item.score >= 0 ? '+' : ''}{item.score}
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            {/* Limits & Balance */}
+                            <div className="bg-slate-900 rounded-[2rem] p-8 text-white space-y-8 shadow-2xl relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12" />
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
+                                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Credit Limit</p>
+                                    </div>
+                                    <p className="text-3xl font-black tracking-tighter">{formatCurrency(user.remainingLimit)}</p>
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Available Balance</p>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
+                                    <div className="space-y-1">
+                                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Total Limit</p>
+                                        <p className="text-sm font-black tracking-tight">{formatCurrency(stats.eligibility.maxAmount)}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Interest Rate</p>
+                                        <p className="text-sm font-black text-emerald-400 tracking-tight">{stats.eligibility.interestRange}</p>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => navigate("/loans")}
+                                    className="w-full py-4 bg-white text-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-400 hover:text-white transition-all shadow-xl active:scale-95"
+                                >
+                                    View Loans
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* RIGHT COLUMN (8/12) */}
+                        <div className="lg:col-span-8 space-y-6">
+                            
+                            {/* Action Center */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {verificationStatus !== "approved" ? (
+                                    <div className="bg-blue-600 rounded-[2rem] p-6 text-white space-y-4 shadow-xl shadow-blue-100">
+                                        <div className="flex items-center justify-between">
+                                            <div className="p-2.5 bg-white/10 rounded-xl"><MdSecurity size={20} /></div>
+                                            <span className="text-[9px] font-black uppercase tracking-widest opacity-60">Priority Task</span>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h3 className="text-sm font-black uppercase tracking-tight">Identity Verification</h3>
+                                            <p className="text-[10px] font-bold opacity-60">Complete verification to increase your credit limit.</p>
+                                        </div>
+                                        <button 
+                                            onClick={() => navigate("/verify-income")}
+                                            className="w-full py-3 bg-white text-blue-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:shadow-lg transition-all"
+                                        >
+                                            Verify Now
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="bg-emerald-600 rounded-[2rem] p-6 text-white space-y-4 shadow-xl shadow-emerald-100">
+                                        <div className="flex items-center justify-between">
+                                            <div className="p-2.5 bg-white/10 rounded-xl"><MdVerified size={20} /></div>
+                                            <span className="text-[9px] font-black uppercase tracking-widest opacity-60">Verified Status</span>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h3 className="text-sm font-black uppercase tracking-tight">Verified Account</h3>
+                                            <p className="text-[10px] font-bold opacity-60">Your profile is fully validated for maximum credit access.</p>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-white text-[10px] font-black uppercase tracking-widest">
+                                            <MdCheckCircle /> Validation Complete
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="p-2.5 bg-slate-50 rounded-xl text-slate-400"><MdLightbulb size={20} /></div>
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Insights</span>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Financial Tip</h3>
+                                        <p className="text-[10px] font-bold text-slate-400">"{stats.insights[0]}"</p>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-emerald-500 text-[10px] font-black uppercase tracking-widest">
+                                        <MdCheckCircle /> Active Monitoring
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Activity */}
+                            <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+                                <div className="p-6 border-b border-slate-50 flex justify-between items-center">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-slate-900 rounded-lg text-white"><MdAccountBalanceWallet size={16} /></div>
+                                        <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-900">Recent Activity</h3>
+                                    </div>
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{stats.loans.length} Active Records</span>
+                                </div>
+                                <div className="divide-y divide-slate-50">
+                                    {stats.loans.length > 0 ? stats.loans.map((loan, i) => (
+                                        <div key={i} className="p-6 hover:bg-slate-50 transition-all space-y-4">
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`p-3 rounded-xl ${loan.requestStatus === 'approved' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
+                                                        <GiProgression size={20} />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-tight">{loan.loanType}</h4>
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{formatCurrency(loan.requestedAmount)} • {loan.tenure}M Term</p>
+                                                    </div>
+                                                </div>
+                                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                                                    loan.requestStatus === 'approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
+                                                    loan.requestStatus === 'rejected' ? 'bg-rose-50 text-rose-600 border-rose-100' : 
+                                                    'bg-blue-50 text-blue-600 border-blue-100'
+                                                }`}>
+                                                    {loan.requestStatus}
+                                                </span>
+                                            </div>
+
+                                            {loan.requestStatus === 'approved' && (
+                                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 pt-2">
+                                                    <div className="space-y-1">
+                                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Monthly EMI</p>
+                                                        <p className="text-sm font-black text-slate-900 tracking-tight">{formatCurrency(loan.emi)}</p>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Next Due Date</p>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <MdCalendarToday className="text-slate-400" size={12} />
+                                                            <p className="text-sm font-black text-slate-900 tracking-tight">15th Monthly</p>
+                                                        </div>
+                                                    </div>
+                                                    <button className="col-span-2 sm:col-span-1 py-3 bg-slate-50 text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all">
+                                                        Manage Loan
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )) : (
+                                        <div className="py-20 text-center space-y-4">
+                                            <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-200">
+                                                <MdAccountBalanceWallet size={24} />
+                                            </div>
+                                            <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">No active records found</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
-
-
-
-

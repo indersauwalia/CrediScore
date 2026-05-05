@@ -1,18 +1,14 @@
 import React, { useState, useContext, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router";
 import { GiReceiveMoney } from "react-icons/gi";
-import { FcGoogle } from "react-icons/fc";
-import { MdEmail, MdLockOutline } from "react-icons/md";
-import LoanImgLoginpage from "../assets/LoanImgLoginpage.png";
+import { MdEmail, MdLockOutline, MdArrowBack } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Login() {
     const [emailOrPhone, setEmailOrPhone] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
-    const { user, logout } = useContext(AuthContext);
-
-    const { login } = useContext(AuthContext);
+    const { user, login } = useContext(AuthContext);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -25,139 +21,78 @@ export default function Login() {
 
     const handleLogin = async () => {
         if (!isValid || loading) return;
-
         setLoading(true);
         const result = await login({
             emailOrPhone: emailOrPhone.trim(),
             password,
         });
-
         setLoading(false);
-
         if (!result.success) {
             alert(result.msg || "Login failed. Please try again.");
         }
     };
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-blue-50 to-green-50 flex flex-col">
-            <div className="flex-1 flex items-center justify-center px-4 py-8 overflow-y-auto">
-                <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden grid md:grid-cols-2">
-                    <div className="bg-linear-to-br from-blue-600 to-green-600 p-6 md:p-8 text-white flex flex-col justify-center items-center text-center">
-                        <div className="max-w-xs space-y-6">
-                            <div className="flex items-center justify-center gap-3">
-                                <div className="p-2 bg-white/20 rounded-xl">
-                                    <GiReceiveMoney className="text-3xl" />
-                                </div>
-                                <h1 className="text-2xl md:text-3xl font-bold">CrediScore</h1>
+        <div className="flex-grow flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-100/50 rounded-full blur-[100px]" />
+                <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-emerald-100/50 rounded-full blur-[100px]" />
+                <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+            </div>
+
+            <div className="w-full max-w-sm space-y-8 relative z-10">
+                <div className="text-center space-y-4">
+                    <div className="inline-flex p-3 bg-slate-900 rounded-2xl shadow-xl text-white mb-2">
+                        <GiReceiveMoney size={28} />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-black text-slate-900 uppercase tracking-widest">Sign In</h1>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Access your financial dashboard</p>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-2xl space-y-6">
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Identifier (Email/Phone)</label>
+                            <div className="relative">
+                                <MdEmail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                <input 
+                                    type="text" 
+                                    value={emailOrPhone} 
+                                    onChange={(e) => setEmailOrPhone(e.target.value)}
+                                    placeholder="Enter identifier"
+                                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-50 rounded-xl text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
+                                />
                             </div>
-                            <h2 className="text-2xl md:text-3xl font-extrabold leading-tight">
-                                Real Credit Score
-                                <br />
-                                Based on Real Income
-                            </h2>
-                            <div className="space-y-3 text-sm md:text-base">
-                                {["100% online", "Instant approval"].map((item) => (
-                                    <div
-                                        key={item}
-                                        className="flex items-center justify-center gap-3"
-                                    >
-                                        <div className="w-5 h-5 bg-white/30 rounded-full flex items-center justify-center text-xs">
-                                            ✓
-                                        </div>
-                                        <span>{item}</span>
-                                    </div>
-                                ))}
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Security Key</label>
+                            <div className="relative">
+                                <MdLockOutline className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                <input 
+                                    type="password" 
+                                    value={password} 
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-50 rounded-xl text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
+                                />
                             </div>
-                            <img
-                                src={LoanImgLoginpage}
-                                alt="CrediScore"
-                                className="w-full mx-auto rounded-2xl shadow-2xl border-4 border-white/30"
-                            />
                         </div>
                     </div>
 
-                    <div className="p-6 md:p-10 flex items-center justify-center">
-                        <div className="w-full max-w-xs space-y-6">
-                            <div className="text-center">
-                                <h2 className="text-2xl md:text-3xl font-extrabold text-gray-800">
-                                    Welcome Back
-                                </h2>
-                                <p className="text-base text-gray-600 mt-2">
-                                    Check your CrediScore instantly
-                                </p>
-                            </div>
+                    <button 
+                        onClick={handleLogin}
+                        disabled={!isValid || loading}
+                        className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[11px] transition-all shadow-xl active:scale-95 ${
+                            isValid && !loading ? "bg-slate-900 text-white hover:bg-blue-600 shadow-blue-100" : "bg-slate-100 text-slate-300 cursor-not-allowed"
+                        }`}
+                    >
+                        {loading ? "Signing in..." : "Continue"}
+                    </button>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Email
-                                </label>
-                                <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600 transition-all">
-                                    <span className="px-4 py-4 bg-gray-50 flex items-center">
-                                        <MdEmail className="text-xl text-gray-500" />
-                                    </span>
-                                    <input
-                                        type="text"
-                                        value={emailOrPhone}
-                                        onChange={(e) => setEmailOrPhone(e.target.value)}
-                                        placeholder="you@example.com"
-                                        className="w-full px-4 py-4 outline-none text-lg"
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Password
-                                </label>
-                                <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600 transition-all">
-                                    <span className="px-4 py-4 bg-gray-50 flex items-center">
-                                        <MdLockOutline className="text-xl text-gray-500" />
-                                    </span>
-                                    <input
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Enter your password"
-                                        className="w-full px-4 py-4 outline-none text-lg"
-                                    />
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={handleLogin}
-                                disabled={!isValid || loading}
-                                className={`w-full py-4 rounded-xl font-bold text-lg transition-all shadow-lg ${
-                                    isValid && !loading
-                                        ? "bg-linear-to-r from-blue-600 to-green-600 text-white hover:scale-105"
-                                        : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                                }`}
-                            >
-                                {loading ? "Logging in..." : "Login"}
-                            </button>
-
-                            <p className="text-center text-sm text-gray-600">
-                                New here?{" "}
-                                <NavLink
-                                    to="/signup"
-                                    className="text-blue-600 font-bold hover:underline"
-                                >
-                                    Sign Up
-                                </NavLink>
-                            </p>
-
-                            <p className="text-center text-xs text-gray-500">
-                                By continuing, you agree to our{" "}
-                                <a href="#" className="text-blue-600 underline">
-                                    Terms
-                                </a>{" "}
-                                &{" "}
-                                <a href="#" className="text-blue-600 underline">
-                                    Privacy Policy
-                                </a>
-                            </p>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

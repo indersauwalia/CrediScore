@@ -7,9 +7,11 @@ import {
     MdCreditCard,
     MdAccountBalance,
     MdUpload,
+    MdArrowForward,
 } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
 import api from "../utils/api";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function IncomeVerificationForm() {
     const { user, refreshUser } = useContext(AuthContext);
@@ -43,23 +45,18 @@ export default function IncomeVerificationForm() {
 
     const handleVerifyStep1 = async () => {
         if (!canVerifyStep1) return;
-
         setLoadingStep1(true);
         setStep1Message("");
-
         try {
             const res = await api.post("/verification/verify-details", {
                 pan: panNumber.toUpperCase(),
                 accountNumber,
                 ifsc: ifscCode.toUpperCase(),
             });
-
             setStep1Message(res.data.msg || "Details verified successfully!");
             setStep1Success(true);
         } catch (err) {
-            setStep1Message(
-                err.response?.data?.msg || "Verification failed. Please check your details."
-            );
+            setStep1Message(err.response?.data?.msg || "Verification failed. Check your details.");
             setStep1Success(false);
         } finally {
             setLoadingStep1(false);
@@ -67,29 +64,21 @@ export default function IncomeVerificationForm() {
     };
 
     const handleSubmitStep2 = async () => {
-        if (!proofFile || !step1Success) {
-            alert("Please complete Step 1 and upload a file");
-            return;
-        }
-
+        if (!proofFile || !step1Success) return;
         setLoadingStep2(true);
         setStep2Message("");
-
         const formData = new FormData();
         formData.append("proof", proofFile);
         formData.append("pan", panNumber.toUpperCase());
         formData.append("accountNumber", accountNumber);
         formData.append("ifsc", ifscCode.toUpperCase());
-
         try {
-            const res = await api.post("/verification/upload-proof", formData, {
+            await api.post("/verification/upload-proof", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
-
             setStep2Message("Income verification completed successfully!");
             if (refreshUser) await refreshUser();
-
-            navigate("/dashboard");
+            setTimeout(() => navigate("/dashboard"), 1500);
         } catch (err) {
             setStep2Message(err.response?.data?.msg || "Upload failed. Please try again.");
         } finally {
@@ -98,197 +87,179 @@ export default function IncomeVerificationForm() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-12 px-6">
-            <button
-                onClick={() => navigate("/dashboard")}
-                className="fixed top-24 left-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
-            >
-                <MdArrowBack className="text-2xl" /> Back
-            </button>
+        <div className="flex-grow py-12 px-6 relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                <div className="absolute top-[-5%] right-[-5%] w-[40%] h-[40%] bg-blue-100/40 rounded-full blur-[100px]" />
+                <div className="absolute bottom-[-5%] left-[-5%] w-[40%] h-[40%] bg-emerald-100/40 rounded-full blur-[100px]" />
+                <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+            </div>
 
-            <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-12">
-                    <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800">
-                        Income Verification Layer
-                    </h1>
-                    <p className="text-xl text-gray-600 mt-4">Complete in 2 steps</p>
-                </div>
+            <div className="max-w-2xl mx-auto relative z-10">
+                <button
+                    onClick={() => navigate("/dashboard")}
+                    className="flex items-center gap-2 text-slate-400 hover:text-slate-900 font-black uppercase tracking-widest text-[10px] mb-8 transition-all"
+                >
+                    <MdArrowBack size={16} /> Exit Verification
+                </button>
 
-                <div className="flex justify-center mb-12">
-                    <div className="flex items-center gap-8">
-                        <div
-                            className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white ${
-                                step >= 1 ? "bg-green-600" : "bg-gray-300"
-                            }`}
-                        >
-                            1
-                        </div>
-                        <div className={`w-32 h-2 ${step >= 2 ? "bg-green-600" : "bg-gray-300"}`} />
-                        <div
-                            className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white ${
-                                step >= 2 ? "bg-green-600" : "bg-gray-300"
-                            }`}
-                        >
-                            2
-                        </div>
+                {/* Simplified Progress Indicator */}
+                <div className="flex items-center justify-center gap-8 mb-12">
+                    <div className="flex items-center gap-4">
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-[10px] transition-all ${step >= 1 ? "bg-slate-900 text-white" : "bg-white text-slate-300 border border-slate-100"}`}>1</div>
+                        <span className={`text-[9px] font-black uppercase tracking-widest ${step >= 1 ? "text-slate-900" : "text-slate-300"}`}>Account Details</span>
+                    </div>
+                    <div className="w-12 h-[2px] bg-slate-100" />
+                    <div className="flex items-center gap-4">
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-[10px] transition-all ${step >= 2 ? "bg-slate-900 text-white" : "bg-white text-slate-300 border border-slate-100"}`}>2</div>
+                        <span className={`text-[9px] font-black uppercase tracking-widest ${step >= 2 ? "text-slate-900" : "text-slate-300"}`}>Document Upload</span>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-3xl shadow-2xl p-10">
-                    {step === 1 && (
-                        <div>
-                            <h2 className="text-3xl font-bold text-gray-800 mb-10 text-center">
-                                Step 1: Enter & Verify Details
-                            </h2>
-
-                            <div className="space-y-10">
-                                <div>
-                                    <label className="block text-lg font-medium text-gray-700 mb-3 flex items-center gap-2">
-                                        <MdCreditCard className="text-2xl text-blue-600" /> PAN
-                                        Number
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={panNumber}
-                                        onChange={(e) => setPanNumber(e.target.value.toUpperCase())}
-                                        placeholder="ABCDE1234F"
-                                        maxLength="10"
-                                        className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 text-lg font-mono tracking-wider"
-                                    />
-                                    {panNumber && !isPanValid && (
-                                        <p className="text-red-500 text-sm mt-2">
-                                            Invalid PAN format
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div className="grid md:grid-cols-2 gap-8">
-                                    <div>
-                                        <label className="block text-lg font-medium text-gray-700 mb-3 flex items-center gap-2">
-                                            <MdAccountBalance className="text-2xl text-green-600" />{" "}
-                                            Account Number
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={accountNumber}
-                                            onChange={(e) => setAccountNumber(e.target.value)}
-                                            placeholder="123456789012"
-                                            className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 text-lg"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-lg font-medium text-gray-700 mb-3">
-                                            IFSC Code
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={ifscCode}
-                                            onChange={(e) =>
-                                                setIfscCode(e.target.value.toUpperCase())
-                                            }
-                                            placeholder="SBIN0001234"
-                                            maxLength="11"
-                                            className="w-full px-6 py-4 rounded-xl border-2 border-gray-300 focus:border-blue-600 text-lg font-mono tracking-wider"
-                                        />
-                                        {ifscCode && !isIfscValid && (
-                                            <p className="text-red-500 text-sm mt-2">
-                                                Invalid IFSC format
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={handleVerifyStep1}
-                                disabled={loadingStep1 || !canVerifyStep1}
-                                className="w-full mt-10 bg-gradient-to-r from-blue-600 to-green-600 text-white py-5 rounded-2xl text-xl font-bold disabled:opacity-50 hover:scale-105 transition"
+                <div className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-50 overflow-hidden p-8 md:p-12">
+                    <AnimatePresence mode="wait">
+                        {step === 1 ? (
+                            <motion.div 
+                                key="step1"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="space-y-8"
                             >
-                                {loadingStep1 ? "Verifying..." : "Verify Details"}
-                            </button>
-
-                            {step1Message && (
-                                <div
-                                    className={`mt-8 text-center text-lg font-bold py-4 rounded-xl ${
-                                        step1Success
-                                            ? "bg-green-100 text-green-700"
-                                            : "bg-red-100 text-red-700"
-                                    } flex items-center justify-center gap-3`}
-                                >
-                                    {step1Success ? (
-                                        <MdCheckCircle className="text-3xl" />
-                                    ) : (
-                                        <MdError className="text-3xl" />
-                                    )}
-                                    {step1Message}
+                                <div className="text-center md:text-left">
+                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">KYC & Banking</h2>
+                                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">Verify your legal and financial identifiers</p>
                                 </div>
-                            )}
 
-                            {step1Success && (
-                                <button
-                                    onClick={() => setStep(2)}
-                                    className="w-full mt-8 bg-green-600 text-white py-5 rounded-2xl text-xl font-bold hover:scale-105 transition"
-                                >
-                                    Next → Upload Proof
-                                </button>
-                            )}
-                        </div>
-                    )}
+                                <div className="space-y-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">PAN Identifier</label>
+                                        <div className="relative">
+                                            <MdCreditCard className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                            <input
+                                                type="text"
+                                                value={panNumber}
+                                                onChange={(e) => setPanNumber(e.target.value.toUpperCase())}
+                                                placeholder="ABCDE1234F"
+                                                maxLength="10"
+                                                className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-50 rounded-xl text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all font-mono tracking-widest"
+                                            />
+                                        </div>
+                                    </div>
 
-                    {step === 2 && (
-                        <div className="text-center">
-                            <h2 className="text-3xl font-bold text-gray-800 mb-10">
-                                Step 2: Upload Bank Statement or Salary Slip
-                            </h2>
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Account Number</label>
+                                            <div className="relative">
+                                                <MdAccountBalance className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                                <input
+                                                    type="text"
+                                                    value={accountNumber}
+                                                    onChange={(e) => setAccountNumber(e.target.value)}
+                                                    placeholder="Enter 10-16 digits"
+                                                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-50 rounded-xl text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
+                                                />
+                                            </div>
+                                        </div>
 
-                            <div className="border-4 border-dashed border-gray-300 rounded-3xl p-16 hover:border-blue-500 transition">
-                                <MdUpload className="text-8xl text-gray-400 mx-auto mb-6" />
-                                <label className="cursor-pointer">
-                                    <input
-                                        type="file"
-                                        accept="application/pdf,image/*"
-                                        onChange={handleFileChange}
-                                        className="hidden"
-                                    />
-                                    <span className="bg-blue-600 text-white px-12 py-6 rounded-2xl text-xl font-bold hover:bg-blue-700 transition">
-                                        Choose File (PDF or Image)
-                                    </span>
-                                </label>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">IFSC Routing</label>
+                                            <input
+                                                type="text"
+                                                value={ifscCode}
+                                                onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
+                                                placeholder="SBIN0001234"
+                                                maxLength="11"
+                                                className="w-full px-4 py-3.5 bg-slate-50 border border-slate-50 rounded-xl text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all font-mono tracking-wider"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
 
-                                {proofFile && (
-                                    <div className="mt-8 flex items-center justify-center gap-4 text-green-600">
-                                        <MdCheckCircle className="text-4xl" />
-                                        <span className="text-xl font-medium">
-                                            {proofFile.name}
+                                <div className="space-y-4">
+                                    <button
+                                        onClick={handleVerifyStep1}
+                                        disabled={loadingStep1 || !canVerifyStep1}
+                                        className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[11px] transition-all shadow-xl active:scale-95 ${canVerifyStep1 && !loadingStep1 ? "bg-slate-900 text-white hover:bg-blue-600" : "bg-slate-100 text-slate-300"}`}
+                                    >
+                                        {loadingStep1 ? "Processing..." : "Verify Identity"}
+                                    </button>
+
+                                    {step1Message && (
+                                        <div className={`p-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-center border ${step1Success ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-rose-50 text-rose-600 border-rose-100"}`}>
+                                            {step1Message}
+                                        </div>
+                                    )}
+
+                                    {step1Success && (
+                                        <button
+                                            onClick={() => setStep(2)}
+                                            className="w-full py-4 bg-emerald-500 text-white rounded-xl font-black uppercase tracking-widest text-[11px] hover:bg-emerald-600 transition-all shadow-xl flex items-center justify-center gap-2"
+                                        >
+                                            Continue to Upload <MdArrowForward />
+                                        </button>
+                                    )}
+                                </div>
+                            </motion.div>
+                        ) : (
+                            <motion.div 
+                                key="step2"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="text-center space-y-8"
+                            >
+                                <div className="text-center md:text-left">
+                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Document Proof</h2>
+                                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">Upload bank statement or salary slip</p>
+                                </div>
+
+                                <div className="border-4 border-dashed border-slate-100 rounded-[2rem] p-12 hover:border-blue-200 transition-all bg-slate-50/50">
+                                    <MdUpload className="text-6xl text-slate-300 mx-auto mb-6" />
+                                    <label className="cursor-pointer">
+                                        <input
+                                            type="file"
+                                            accept="application/pdf,image/*"
+                                            onChange={handleFileChange}
+                                            className="hidden"
+                                        />
+                                        <span className="bg-white border border-slate-200 text-slate-900 px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm inline-block">
+                                            {proofFile ? "Change File" : "Select Document"}
                                         </span>
+                                    </label>
+
+                                    {proofFile && (
+                                        <div className="mt-6 flex items-center justify-center gap-3 text-emerald-600 text-[11px] font-black uppercase tracking-widest">
+                                            <MdCheckCircle size={20} />
+                                            {proofFile.name}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="flex gap-4">
+                                    <button
+                                        onClick={() => setStep(1)}
+                                        className="flex-1 py-4 bg-slate-100 text-slate-900 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-slate-200 transition-all"
+                                    >
+                                        Back
+                                    </button>
+                                    <button
+                                        onClick={handleSubmitStep2}
+                                        disabled={loadingStep2 || !proofFile}
+                                        className={`flex-[2] py-4 rounded-xl font-black uppercase tracking-widest text-[11px] transition-all shadow-xl active:scale-95 ${proofFile && !loadingStep2 ? "bg-slate-900 text-white hover:bg-blue-600" : "bg-slate-100 text-slate-300"}`}
+                                    >
+                                        {loadingStep2 ? "Analyzing..." : "Complete Verification"}
+                                    </button>
+                                </div>
+
+                                {step2Message && (
+                                    <div className="p-4 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-black uppercase tracking-widest">
+                                        {step2Message}
                                     </div>
                                 )}
-                            </div>
-
-                            <div className="flex gap-6 mt-12">
-                                <button
-                                    onClick={() => setStep(1)}
-                                    className="flex-1 bg-gray-200 py-5 rounded-xl text-xl font-bold hover:bg-gray-300 transition"
-                                >
-                                    Back
-                                </button>
-                                <button
-                                    onClick={handleSubmitStep2}
-                                    disabled={loadingStep2 || !proofFile}
-                                    className="flex-1 bg-gradient-to-r from-blue-600 to-green-600 text-white py-5 rounded-xl text-xl font-bold disabled:opacity-50 transition"
-                                >
-                                    {loadingStep2 ? "Submitting..." : "Complete Verification"}
-                                </button>
-                            </div>
-
-                            {step2Message && (
-                                <div className="mt-10 text-center text-2xl font-bold text-green-600 animate-pulse">
-                                    {step2Message}
-                                </div>
-                            )}
-                        </div>
-                    )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
         </div>

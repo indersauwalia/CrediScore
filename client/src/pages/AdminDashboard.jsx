@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { GiReceiveMoney } from "react-icons/gi";
-import { MdPendingActions, MdVerified, MdClose } from "react-icons/md";
+import { MdPendingActions, MdVerified, MdClose, MdPerson, MdTimer } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
 
 export default function AdminDashboard() {
@@ -29,7 +29,6 @@ export default function AdminDashboard() {
                 setLoanRequests(loanData.requests || []);
             } catch (err) {
                 console.error("Error fetching admin data:", err);
-                alert("Failed to load data. Please refresh the page.");
             } finally {
                 setLoading(false);
             }
@@ -48,18 +47,9 @@ export default function AdminDashboard() {
 
             if (res.ok) {
                 setIncomeRequests((prev) => prev.filter((r) => r._id !== requestId));
-                alert(
-                    `Income verification ${
-                        action === "approve" ? "approved" : "rejected"
-                    } successfully`
-                );
-            } else {
-                const errorData = await res.json();
-                alert(errorData.msg || "Action failed");
             }
         } catch (err) {
-            console.error("Network error:", err);
-            alert("Network error. Please try again.");
+            console.error("Action failed:", err);
         }
     };
 
@@ -73,256 +63,157 @@ export default function AdminDashboard() {
 
             if (res.ok) {
                 setLoanRequests((prev) => prev.filter((r) => r._id !== requestId));
-                alert(
-                    `Loan request ${action === "approve" ? "approved" : "rejected"} successfully`
-                );
-            } else {
-                const errorData = await res.json();
-                alert(errorData.msg || "Action failed");
             }
         } catch (err) {
-            console.error("Network error:", err);
-            alert("Network error. Please try again.");
+            console.error("Action failed:", err);
         }
     };
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-linear-to-br from-blue-50 to-green-50 flex items-center justify-center">
-                <p className="text-2xl text-gray-600">Loading Admin Dashboard...</p>
+            <div className="py-20 text-center text-slate-400 font-black uppercase tracking-widest text-[10px] animate-pulse">
+                Loading administrative data...
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-blue-50 to-green-50">
-            <div className="pt-24 pb-12 px-6">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-12">
-                        <h1 className="text-5xl font-extrabold text-gray-800 mb-4 flex items-center justify-center gap-4">
-                            <MdPendingActions className="text-6xl text-blue-600" />
-                            Admin Dashboard
-                        </h1>
+        <div className="p-6 md:p-8">
+            <div className="max-w-6xl mx-auto space-y-8">
+                
+                {/* Header */}
+                <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-slate-900 rounded-xl text-white">
+                            <MdPendingActions size={20} />
+                        </div>
+                        <div>
+                            <h1 className="text-sm font-black text-slate-900 uppercase tracking-widest">Admin Control</h1>
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Administrative Overview</p>
+                        </div>
                     </div>
-
-                    <div className="flex justify-center gap-6 mb-10">
+                    <div className="flex gap-2">
                         <button
                             onClick={() => setActiveTab("income")}
-                            className={`px-8 py-4 rounded-xl text-lg font-semibold transition shadow-md ${
-                                activeTab === "income"
-                                    ? "bg-blue-600 text-white"
-                                    : "bg-white text-gray-700 hover:bg-gray-100"
+                            className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
+                                activeTab === "income" ? "bg-slate-900 text-white shadow-lg" : "bg-white text-slate-400 border border-slate-100 hover:bg-slate-50"
                             }`}
                         >
-                            Pending Income Verification ({incomeRequests.length})
+                            Verifications ({incomeRequests.length})
                         </button>
                         <button
                             onClick={() => setActiveTab("loans")}
-                            className={`px-8 py-4 rounded-xl text-lg font-semibold transition shadow-md ${
-                                activeTab === "loans"
-                                    ? "bg-blue-600 text-white"
-                                    : "bg-white text-gray-700 hover:bg-gray-100"
+                            className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
+                                activeTab === "loans" ? "bg-slate-900 text-white shadow-lg" : "bg-white text-slate-400 border border-slate-100 hover:bg-slate-50"
                             }`}
                         >
-                            Pending Loan Requests ({loanRequests.length})
+                            Loan Queue ({loanRequests.length})
                         </button>
                     </div>
+                </div>
 
-                    {activeTab === "income" && (
-                        <div className="bg-white rounded-3xl shadow-xl p-8">
-                            <table className="min-w-full">
-                                <thead className="border-b border-gray-200">
-                                    <tr>
-                                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">
-                                            User
-                                        </th>
-                                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">
-                                            CrediScore
-                                        </th>
-                                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">
-                                            Monthly Income
-                                        </th>
-                                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">
-                                            Proof Document
-                                        </th>
-                                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">
-                                            Submitted On
-                                        </th>
-                                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">
-                                            Actions
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {incomeRequests.map((req) => (
-                                        <tr key={req._id} className="hover:bg-gray-50 transition">
-                                            <td className="px-6 py-4">
-                                                <div className="text-sm font-medium text-gray-900">
-                                                    {req.user?.name || "Unknown User"}
-                                                </div>
-                                                <div className="text-sm text-gray-500">
-                                                    {req.income?.pan || "N/A"}
+                {/* Table Layout */}
+                <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-slate-50 border-b border-slate-100">
+                                    <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Subject</th>
+                                    <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Core Metrics</th>
+                                    <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Documents</th>
+                                    <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Timeline</th>
+                                    <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {activeTab === "income" ? (
+                                    incomeRequests.map((req) => (
+                                        <tr key={req._id} className="hover:bg-slate-50 transition-colors">
+                                            <td className="px-6 py-5">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+                                                        <MdPerson size={16} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[11px] font-black text-slate-900 uppercase leading-none">{req.user?.name}</p>
+                                                        <p className="text-[9px] font-bold text-slate-400 uppercase mt-1 tracking-tighter">{req.income?.pan || "PAN NOT PROVIDED"}</p>
+                                                    </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">
-                                                {req.user?.crediScore ?? 0}
+                                            <td className="px-6 py-5">
+                                                <p className="text-[11px] font-black text-slate-900 tracking-tight">₹{req.income?.monthlyIncome?.toLocaleString()}</p>
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Income Profile</p>
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">
-                                                ₹
-                                                {req.income?.monthlyIncome?.toLocaleString() ||
-                                                    "N/A"}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm">
-                                                {req.income?.proofFilename ? (
-                                                    <a
-                                                        href={`/api/admin/view-proof/${req.income._id}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-blue-600 hover:underline font-medium"
-                                                    >
-                                                        {req.income.proofFilename}
-                                                    </a>
-                                                ) : (
-                                                    <span className="text-gray-500">No file</span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-500">
-                                                {new Date(req.createdAt).toLocaleDateString()}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm">
-                                                <button
-                                                    onClick={() =>
-                                                        handleIncomeAction(req._id, "approve")
-                                                    }
-                                                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded mr-2 transition"
+                                            <td className="px-6 py-5">
+                                                <a
+                                                    href={`/api/admin/view-proof/${req.income._id}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-[9px] font-black text-blue-600 uppercase tracking-widest hover:underline"
                                                 >
-                                                    <MdVerified className="inline mr-1" /> Approve
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        const note = prompt(
-                                                            "Reason for rejection (optional):"
-                                                        );
-                                                        handleIncomeAction(
-                                                            req._id,
-                                                            "reject",
-                                                            note || ""
-                                                        );
-                                                    }}
-                                                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition"
-                                                >
-                                                    <MdClose className="inline mr-1" /> Reject
-                                                </button>
+                                                    View Statement
+                                                </a>
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 uppercase">
+                                                    <MdTimer size={12} />
+                                                    {new Date(req.createdAt).toLocaleDateString()}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-5 text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <button onClick={() => handleIncomeAction(req._id, "approve")} className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors shadow-sm"><MdVerified size={16} /></button>
+                                                    <button onClick={() => handleIncomeAction(req._id, "reject")} className="p-2 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors shadow-sm"><MdClose size={16} /></button>
+                                                </div>
                                             </td>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                            {incomeRequests.length === 0 && (
-                                <div className="text-center py-16 text-gray-500 text-lg">
-                                    No pending income verification requests
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {activeTab === "loans" && (
-                        <div className="bg-white rounded-3xl shadow-xl p-8">
-                            <table className="min-w-full">
-                                <thead className="border-b border-gray-200">
-                                    <tr>
-                                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">
-                                            User
-                                        </th>
-                                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">
-                                            Loan Type
-                                        </th>
-                                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">
-                                            Requested Amount
-                                        </th>
-                                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">
-                                            Tenure
-                                        </th>
-                                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">
-                                            Interest Rate
-                                        </th>
-                                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">
-                                            Submitted On
-                                        </th>
-                                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">
-                                            Actions
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {loanRequests.map((req) => (
-                                        <tr key={req._id} className="hover:bg-gray-50 transition">
-                                            <td className="px-6 py-4">
-                                                <div className="text-sm font-medium text-gray-900">
-                                                    {req.user?.name || "Unknown User"}
-                                                </div>
-                                                <div className="text-sm text-gray-500">
-                                                    {req.user?.phone || "N/A"}
+                                    ))
+                                ) : (
+                                    loanRequests.map((req) => (
+                                        <tr key={req._id} className="hover:bg-slate-50 transition-colors">
+                                            <td className="px-6 py-5">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+                                                        <GiReceiveMoney size={16} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[11px] font-black text-slate-900 uppercase leading-none">{req.user?.name}</p>
+                                                        <p className="text-[9px] font-bold text-slate-400 uppercase mt-1 tracking-tighter">{req.loanType}</p>
+                                                    </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">
-                                                {req.loanType}
+                                            <td className="px-6 py-5">
+                                                <p className="text-[11px] font-black text-slate-900 tracking-tight">₹{req.requestedAmount?.toLocaleString()}</p>
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{req.tenure}M @ {req.interestRate}%</p>
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">
-                                                ₹{req.requestedAmount?.toLocaleString() || "N/A"}
+                                            <td className="px-6 py-5">
+                                                <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Digital Auth</span>
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">
-                                                {req.tenure} months
+                                            <td className="px-6 py-5">
+                                                <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 uppercase">
+                                                    <MdTimer size={12} />
+                                                    {new Date(req.createdAt).toLocaleDateString()}
+                                                </div>
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">
-                                                {req.interestRate}%
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-500">
-                                                {new Date(req.createdAt).toLocaleDateString()}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm">
-                                                <button
-                                                    onClick={() =>
-                                                        handleLoanAction(req._id, "approve")
-                                                    }
-                                                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded mr-2 transition"
-                                                >
-                                                    <MdVerified className="inline mr-1" /> Approve
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        const note = prompt(
-                                                            "Reason for rejection (optional):"
-                                                        );
-                                                        handleLoanAction(
-                                                            req._id,
-                                                            "reject",
-                                                            note || ""
-                                                        );
-                                                    }}
-                                                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition"
-                                                >
-                                                    <MdClose className="inline mr-1" /> Reject
-                                                </button>
+                                            <td className="px-6 py-5 text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <button onClick={() => handleLoanAction(req._id, "approve")} className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors shadow-sm"><MdVerified size={16} /></button>
+                                                    <button onClick={() => handleLoanAction(req._id, "reject")} className="p-2 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors shadow-sm"><MdClose size={16} /></button>
+                                                </div>
                                             </td>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                            {loanRequests.length === 0 && (
-                                <div className="text-center py-16 text-gray-500 text-lg">
-                                    No pending loan requests
-                                </div>
-                            )}
-                        </div>
-                    )}
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                        {((activeTab === "income" && incomeRequests.length === 0) || (activeTab === "loans" && loanRequests.length === 0)) && (
+                            <div className="py-20 text-center">
+                                <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Queue is clear</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
-
-            <footer className="py-10 text-center text-gray-500 text-sm border-t border-gray-200">
-                © {new Date().getFullYear()} CrediScore • Income-First Digital Lending • RBI
-                Guidelines Compliant
-            </footer>
         </div>
     );
 }

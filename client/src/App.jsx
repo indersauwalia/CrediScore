@@ -11,26 +11,33 @@ import IncomeVerificationForm from './pages/IncomeVerificationForm';
 import Loans from './pages/Loans';
 import AdminDashboard from './pages/AdminDashboard';
 import EMICalculator from './pages/EMICalculator';
+import Footer from './components/Footer';
+
+import LoanApplication from './pages/LoanApplication';
 
 function App() {
     const location = useLocation();
     const showNavbar = location.pathname !== "/";
 
     return (
-        <>
+        <div className="min-h-screen flex flex-col bg-slate-50">
             {showNavbar && <Navbar />}
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/credit-form" element={<CreditScoreForm />} />
-                <Route path="/verify-income" element={<IncomeVerificationForm />} />
-                <Route path="/loans" element={<Loans />} />
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/tools" element={<EMICalculator />} />
-            </Routes>
-        </>
+            <main className="flex-grow flex flex-col">
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/credit-form" element={<CreditScoreForm />} />
+                    <Route path="/verify-income" element={<IncomeVerificationForm />} />
+                    <Route path="/loans" element={<Loans />} />
+                    <Route path="/loans/apply/:id" element={<LoanApplication />} />
+                    <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/tools" element={<EMICalculator />} />
+                </Routes>
+            </main>
+            {showNavbar && <Footer />}
+        </div>
     );
 }
 

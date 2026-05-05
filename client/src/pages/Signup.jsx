@@ -1,9 +1,7 @@
 import React, { useState, useContext } from "react";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { GiReceiveMoney } from "react-icons/gi";
-import { FcGoogle } from "react-icons/fc";
-import { MdPerson, MdCake, MdPhone, MdEmail, MdLockOutline } from "react-icons/md";
-import LoanImgLoginpage from "../assets/LoanImgLoginpage.png";
+import { MdPerson, MdCake, MdPhone, MdEmail, MdLockOutline, MdArrowBack } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Signup() {
@@ -12,195 +10,94 @@ export default function Signup() {
     const [phone, setPhone] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
     const { signup } = useContext(AuthContext);
+    const navigate = useNavigate();
 
-    const isValid =
-        name.length > 2 &&
-        age >= 18 &&
-        age <= 100 &&
-        phone.length === 10 &&
-        email.includes("@") &&
-        password.length >= 6;
+    const isValid = name.length > 2 && age >= 18 && phone.length === 10 && email.includes("@") && password.length >= 6;
 
     const handleSignup = async () => {
         if (!isValid) return;
-
-        const result = await signup({
-            name,
-            age: Number(age),
-            phone,
-            email,
-            password,
-        });
-
+        const result = await signup({ name, age: Number(age), phone, email, password });
         if (!result.success) {
             alert(result.msg || "Signup failed. Please try again.");
         }
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex flex-col">
-            <div className="flex-1 flex items-center justify-center px-4 py-8 overflow-y-auto">
-                <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden grid md:grid-cols-2">
-                    <div className="bg-gradient-to-br from-blue-600 to-green-600 p-6 md:p-8 text-white flex flex-col justify-center items-center text-center">
-                        <div className="max-w-xs space-y-6">
-                            <div className="flex items-center justify-center gap-3">
-                                <div className="p-2 bg-white/20 rounded-xl">
-                                    <GiReceiveMoney className="text-3xl" />
+        <div className="flex-grow flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-blue-100/50 rounded-full blur-[100px]" />
+                <div className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-emerald-100/50 rounded-full blur-[100px]" />
+                <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+            </div>
+
+            <div className="w-full max-w-sm space-y-8 relative z-10">
+                <div className="text-center space-y-4">
+                    <div className="inline-flex p-3 bg-slate-900 rounded-2xl shadow-xl text-white mb-2">
+                        <GiReceiveMoney size={28} />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-black text-slate-900 uppercase tracking-widest">Get Started</h1>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Create your secure financial account</p>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-2xl space-y-5">
+                    <div className="space-y-4">
+                        {/* Full Name - Single Line */}
+                        <div className="space-y-1.5">
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Full Legal Name</label>
+                            <div className="relative">
+                                <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter full name" className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-50 rounded-xl text-xs font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all" />
+                            </div>
+                        </div>
+
+                        {/* Phone & Age - Combined Line */}
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Contact Number</label>
+                                <div className="relative">
+                                    <MdPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                    <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="9876543210" className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-50 rounded-xl text-xs font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all" />
                                 </div>
-                                <h1 className="text-2xl md:text-3xl font-bold">CrediScore</h1>
                             </div>
-
-                            <h2 className="text-2xl md:text-3xl font-extrabold leading-tight">
-                                Join Thousands Getting
-                                <br />
-                                Fair Credit Scores
-                            </h2>
-
-                            <div className="space-y-3 text-sm md:text-base">
-                                {[
-                                    "Real income-based scoring",
-                                    "No CIBIL needed",
-                                    "Instant approval",
-                                ].map((item) => (
-                                    <div
-                                        key={item}
-                                        className="flex items-center justify-center gap-3"
-                                    >
-                                        <div className="w-5 h-5 bg-white/30 rounded-full flex items-center justify-center text-xs">
-                                            ✓
-                                        </div>
-                                        <span>{item}</span>
-                                    </div>
-                                ))}
+                            <div className="space-y-1.5">
+                                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Age</label>
+                                <div className="relative">
+                                    <MdCake className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                    <input type="number" value={age} onChange={(e) => setAge(e.target.value.replace(/\D/g, "").slice(0, 2))} placeholder="18+" className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-50 rounded-xl text-xs font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all" />
+                                </div>
                             </div>
+                        </div>
 
-                            <img
-                                src={LoanImgLoginpage}
-                                alt="CrediScore"
-                                className="w-full max-w-[220px] mx-auto rounded-2xl shadow-2xl border-4 border-white/30"
-                            />
+                        <div className="space-y-1.5">
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Email Address</label>
+                            <div className="relative">
+                                <MdEmail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@domain.com" className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-50 rounded-xl text-xs font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all" />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Password</label>
+                            <div className="relative">
+                                <MdLockOutline className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-50 rounded-xl text-xs font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all" />
+                            </div>
                         </div>
                     </div>
 
-                    <div className="p-6 md:p-10 flex items-center justify-center">
-                        <div className="w-full max-w-xs space-y-5">
-                            <div className="text-center">
-                                <h2 className="text-2xl md:text-3xl font-extrabold text-gray-800">
-                                    Create Account
-                                </h2>
-                                <p className="text-sm md:text-base text-gray-600 mt-1">
-                                    Get your real CrediScore instantly
-                                </p>
-                            </div>
-
-                            <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600">
-                                <span className="px-4 py-4 bg-gray-50 flex items-center">
-                                    <MdPerson />
-                                </span>
-                                <input
-                                    type="text"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    placeholder="Full Name"
-                                    className="w-full px-4 py-4 outline-none"
-                                />
-                            </div>
-
-                            <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600">
-                                <span className="px-4 py-4 bg-gray-50 flex items-center">
-                                    <MdCake />
-                                </span>
-                                <input
-                                    type="number"
-                                    value={age}
-                                    onChange={(e) =>
-                                        setAge(e.target.value.replace(/\D/g, "").slice(0, 2))
-                                    }
-                                    placeholder="Your Age (18+)"
-                                    className="w-full px-4 py-4 outline-none"
-                                    min="18"
-                                    max="100"
-                                />
-                            </div>
-
-                            <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600">
-                                <span className="px-4 py-4 bg-gray-50 flex items-center gap-1">
-                                    <MdPhone /> +91
-                                </span>
-                                <input
-                                    type="tel"
-                                    value={phone}
-                                    onChange={(e) =>
-                                        setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
-                                    }
-                                    placeholder="98765 43210"
-                                    className="w-full px-4 py-4 outline-none"
-                                    maxLength={10}
-                                />
-                            </div>
-
-                            <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600">
-                                <span className="px-4 py-4 bg-gray-50 flex items-center">
-                                    <MdEmail />
-                                </span>
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="you@example.com"
-                                    className="w-full px-4 py-4 outline-none"
-                                />
-                            </div>
-
-                            <div className="flex rounded-xl border-2 border-gray-300 focus-within:border-blue-600">
-                                <span className="px-4 py-4 bg-gray-50 flex items-center">
-                                    <MdLockOutline />
-                                </span>
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Create password"
-                                    className="w-full px-4 py-4 outline-none"
-                                />
-                            </div>
-
-                            <button
-                                onClick={handleSignup}
-                                disabled={!isValid}
-                                className={`w-full py-4 rounded-xl font-bold transition-all text-lg ${
-                                    isValid
-                                        ? "bg-gradient-to-r from-blue-600 to-green-600 text-white shadow-lg hover:shadow-xl hover:scale-105"
-                                        : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                                }`}
-                            >
-                                Create Account
-                            </button>
-
-                            <p className="text-center text-xs text-gray-500">
-                                Already have an account?{" "}
-                                <NavLink
-                                    to="/login"
-                                    className="text-blue-600 font-bold hover:underline"
-                                >
-                                    Login
-                                </NavLink>
-                            </p>
-
-                            <p className="text-center text-xs text-gray-400">
-                                By signing up, you agree to our{" "}
-                                <a href="#" className="text-blue-600 underline">
-                                    Terms
-                                </a>{" "}
-                                &{" "}
-                                <a href="#" className="text-blue-600 underline">
-                                    Privacy Policy
-                                </a>
-                            </p>
-                        </div>
-                    </div>
+                    <button 
+                        onClick={handleSignup}
+                        disabled={!isValid}
+                        className={`w-full py-3.5 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all shadow-xl active:scale-95 ${
+                            isValid ? "bg-slate-900 text-white hover:bg-blue-600 shadow-blue-100" : "bg-slate-100 text-slate-300 cursor-not-allowed"
+                        }`}
+                    >
+                        Register Account
+                    </button>
                 </div>
             </div>
         </div>

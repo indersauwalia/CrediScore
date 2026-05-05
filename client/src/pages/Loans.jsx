@@ -1,13 +1,29 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import { GiReceiveMoney } from "react-icons/gi";
-import { MdArrowForward, MdVerified, MdWarning, MdBlock, MdHourglassEmpty } from "react-icons/md";
+import { GiReceiveMoney, GiPiggyBank } from "react-icons/gi";
+import { 
+    MdArrowForward, 
+    MdVerified, 
+    MdWarning, 
+    MdBlock, 
+    MdHourglassEmpty, 
+    MdSearch, 
+    MdFilterList, 
+    MdInfoOutline,
+    MdTrendingUp,
+    MdAccountBalanceWallet,
+    MdStars
+} from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
 import api from "../utils/api";
+import { motion, AnimatePresence } from "framer-motion";
+import { loanSchemes } from "../utils/loanSchemes";
 
 export default function LoanPage() {
     const { user, refreshUser } = useContext(AuthContext);
-    const [myApplications, setMyApplications] = useState([]); // Track existing loans
+    const [myApplications, setMyApplications] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [sortBy, setSortBy] = useState("default");
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -45,63 +61,6 @@ export default function LoanPage() {
         }).format(amount);
     };
 
-    const loanSchemes = [
-        {
-            title: "Personal Loan",
-            maxAmount: 500000,
-            tenure: "6 - 36 months",
-            baseRate: 14.0,
-            processingFee: "1% + GST",
-            description: "For personal needs, medical, travel, or any emergency.",
-            recommended: crediScore >= 850,
-        },
-        {
-            title: "Salary Advance",
-            maxAmount: 100000,
-            tenure: "3 - 12 months",
-            baseRate: 8.0,
-            processingFee: "Nil",
-            description: "Quick cash advance against your salary. Instant disbursement.",
-            recommended: verificationStatus === "approved",
-        },
-        {
-            title: "Business Boost Loan",
-            maxAmount: 125000,
-            tenure: "12 - 48 months",
-            baseRate: 13.5,
-            processingFee: "1.5% + GST",
-            description: "Grow your small business or self-employment venture.",
-            recommended: crediScore >= 700,
-        },
-        {
-            title: "Education Loan",
-            maxAmount: 50000,
-            tenure: "12 - 60 months",
-            baseRate: 11.5,
-            processingFee: "1% + GST",
-            description: "Fund higher education with flexible repayment.",
-            recommended: crediScore >= 750,
-        },
-        {
-            title: "Two-Wheeler Loan",
-            maxAmount: 150000,
-            tenure: "12 - 36 months",
-            baseRate: 9.5,
-            processingFee: "1% + GST",
-            description: "Buy your dream bike with low interest and easy EMIs.",
-            recommended: crediScore >= 650,
-        },
-        {
-            title: "Medical Emergency Loan",
-            maxAmount: 75000,
-            tenure: "6 - 24 months",
-            baseRate: 10.0,
-            processingFee: "0.5% + GST",
-            description: "Immediate funds for unplanned medical treatments.",
-            recommended: crediScore >= 700,
-        },
-    ];
-
     const getMaxAmount = (scheme) => {
         const userLimit = user.creditLimit || 50000;
         if (scheme.title === "Salary Advance") {
@@ -115,193 +74,261 @@ export default function LoanPage() {
 
     const getInterestRate = (scheme) => {
         if (scheme.title === "Personal Loan") {
-            if (crediScore >= 750) return "10.5%";
-            if (crediScore >= 650) return "12%";
-            return `${scheme.baseRate}%`;
+            if (crediScore >= 750) return 10.5;
+            if (crediScore >= 650) return 12.0;
+            return scheme.baseRate;
         }
-        return `${scheme.baseRate}%`;
+        return scheme.baseRate;
     };
 
-    const handleApply = async (scheme) => {
-        if (!isEligible) return;
+    const isRecommended = (scheme) => {
+        if (scheme.title === "Personal Loan") return crediScore >= 800;
+        if (scheme.title === "Salary Advance") return verificationStatus === "approved" && crediScore >= 600;
+        if (scheme.title === "Business Boost Loan") return crediScore >= 700;
+        if (scheme.title === "Education Loan") return crediScore >= 750;
+        if (scheme.title === "Two-Wheeler Loan") return crediScore >= 650;
+        if (scheme.title === "Medical Emergency Loan") return crediScore >= 700;
+        return false;
+    };
 
-        const tenureString = scheme.tenure.includes("-")
-            ? scheme.tenure.split("-")[1].trim()
-            : scheme.tenure;
-        const cleanTenure = parseInt(tenureString.replace(/[^0-9]/g, ""));
-        const cleanRate = parseFloat(getInterestRate(scheme).replace("%", ""));
+    const filteredAndSortedSchemes = useMemo(() => {
+        let results = loanSchemes.filter(s => 
+            s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            s.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            s.tag.toLowerCase().includes(searchQuery.toLowerCase())
+        );
 
-        const applicationData = {
-            loanType: scheme.title,
-            requestedAmount: Number(getMaxAmount(scheme)),
-            tenure: cleanTenure,
-            interestRate: cleanRate,
-            processingFee: scheme.processingFee,
-        };
-
-        try {
-            const res = await api.post("/loans/apply", applicationData);
-            if (res.status === 200 || res.status === 201) {
-                alert("Loan application submitted successfully!");
-                fetchMyApplications();
-                navigate("/dashboard");
-            }
-        } catch (err) {
-            const msg = err.response?.data?.msg || "Application failed.";
-            alert(`Error: ${msg}`);
+        if (sortBy === "rate-low") {
+            results.sort((a, b) => getInterestRate(a) - getInterestRate(b));
+        } else if (sortBy === "amount-high") {
+            results.sort((a, b) => getMaxAmount(b) - getMaxAmount(a));
+        } else if (sortBy === "recommended") {
+            results.sort((a, b) => (isRecommended(b) ? 1 : 0) - (isRecommended(a) ? 1 : 0));
         }
+
+        return results;
+    }, [searchQuery, sortBy, crediScore, user.creditLimit]);
+
+    const handleApply = (scheme) => {
+        navigate(`/loans/apply/${scheme.id}`);
     };
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-blue-50 to-green-50">
-            <div className="pt-5 pb-5 px-6">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-12">
-                        <h1 className="text-5xl font-extrabold text-gray-800 mb-4">
-                            Choose Your Loan Scheme
-                        </h1>
-                        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                            Instant digital loans based on your income-verified CrediScore.
-                        </p>
-                    </div>
+        <div>
+            {/* Hero Section - More Compact */}
+            <div className="relative bg-linear-to-br from-blue-900 via-indigo-800 to-blue-900 pt-10 pb-20 px-6 overflow-hidden">
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-0 left-0 w-64 h-64 bg-blue-400 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+                </div>
 
-                    {!isEligible && (
-                        <div className="mb-10">
-                            {verificationStatus !== "approved" ? (
-                                <div className="bg-orange-50 border-2 border-orange-300 rounded-2xl p-8 flex items-center justify-center gap-6 shadow-lg">
-                                    <MdWarning className="text-6xl text-orange-600" />
-                                    <div className="text-left">
-                                        <h3 className="text-2xl font-bold text-orange-800">
-                                            Income Verification {user.verificationStatus}
-                                        </h3>
-                                        <p className="text-lg text-orange-700 mt-2">
-                                            Please complete income verification to become eligible
-                                            for loans.
-                                        </p>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-8 flex items-center justify-center gap-6 shadow-lg">
-                                    <MdBlock className="text-6xl text-red-600" />
-                                    <div className="text-left">
-                                        <h3 className="text-2xl font-bold text-red-800">
-                                            No Remaining Credit Limit
-                                        </h3>
-                                        <p className="text-lg text-red-700 mt-2">
-                                            Your credit limit is fully utilized.
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
+                <div className="max-w-7xl mx-auto relative z-10 text-center">
+                    <motion.h1 
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight"
+                    >
+                        Loan Marketplace
+                    </motion.h1>
+                    <motion.p 
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="text-base text-blue-100 max-w-lg mx-auto mb-8 opacity-80"
+                    >
+                        Discover premium credit products tailored to your CrediScore profile.
+                    </motion.p>
+
+                    {/* Stats Bar - Compact */}
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2 }}
+                        className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-2xl mx-auto"
+                    >
+                        <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-3 text-white text-left">
+                            <div className="flex items-center gap-2 mb-0.5">
+                                <MdStars className="text-emerald-400 text-base" />
+                                <span className="text-blue-200 text-[9px] font-bold uppercase tracking-widest">Score</span>
+                            </div>
+                            <div className="text-xl font-black">{crediScore}</div>
                         </div>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-                        {loanSchemes.map((scheme, index) => {
-                            const maxAmt = getMaxAmount(scheme);
-                            const rate = getInterestRate(scheme);
-                            const isRecommended = scheme.recommended && isEligible;
-
-                            const existingRequest = myApplications.find(
-                                (app) =>
-                                    app.loanType === scheme.title && app.requestStatus === "pending"
-                            );
-
-                            return (
-                                <div
-                                    key={index}
-                                    className={`bg-white rounded-3xl shadow-xl border-2 ${
-                                        isRecommended
-                                            ? "border-green-500 ring-4 ring-green-100"
-                                            : "border-gray-200"
-                                    } p-8 relative overflow-hidden transition hover:scale-105`}
-                                >
-                                    {isRecommended && (
-                                        <div className="absolute top-0 right-0 bg-green-500 text-white px-4 py-1 rounded-bl-2xl text-sm font-bold">
-                                            Recommended
-                                        </div>
-                                    )}
-                                    <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                                        {scheme.title}
-                                    </h3>
-                                    <div className="space-y-4 mb-6">
-                                        <div>
-                                            <p className="text-gray-600">Max Amount</p>
-                                            <p className="text-3xl font-extrabold text-blue-600">
-                                                {formatCurrency(maxAmt)}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-600">Tenure</p>
-                                            <p className="text-xl font-semibold">{scheme.tenure}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-600">Interest Rate</p>
-                                            <p className="text-xl font-semibold">{rate} p.a.</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-600">Processing Fee</p>
-                                            <p className="text-xl font-semibold">
-                                                {scheme.processingFee}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <p className="text-gray-600 mb-8">{scheme.description}</p>
-
-                                    {existingRequest ? (
-                                        <div className="w-full py-4 rounded-xl text-xl font-bold bg-amber-100 text-amber-700 flex items-center justify-center gap-3 border-2 border-amber-200">
-                                            <MdHourglassEmpty className="animate-spin" />
-                                            Under Review
-                                        </div>
-                                    ) : (
-                                        <button
-                                            onClick={() => handleApply(scheme)}
-                                            disabled={!isEligible}
-                                            className={`w-full py-4 rounded-xl text-xl font-bold transition flex items-center justify-center gap-3 ${
-                                                isEligible
-                                                    ? "bg-linear-to-r from-blue-600 to-green-600 text-white hover:scale-105 shadow-lg"
-                                                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                            }`}
-                                        >
-                                            {isEligible ? (
-                                                <>
-                                                    Apply Now
-                                                    <MdArrowForward className="text-2xl" />
-                                                </>
-                                            ) : verificationStatus === "approved" ? (
-                                                "Limit Utilized"
-                                            ) : (
-                                                "Verify Income First"
-                                            )}
-                                        </button>
-                                    )}
-
-                                    {isEligible && isRecommended && !existingRequest && (
-                                        <p className="text-center mt-4 text-green-600 font-medium flex items-center justify-center gap-2">
-                                            <MdVerified /> Best match for your profile
-                                        </p>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {isEligible && (
-                        <div className="text-center">
-                            <p className="text-2xl text-gray-700 mb-6">
-                                Remaining Limit:{" "}
-                                <span className="font-bold text-green-600">
-                                    {formatCurrency(remainingLimit)}
-                                </span>
-                            </p>
+                        <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-3 text-white text-left">
+                            <div className="flex items-center gap-2 mb-0.5">
+                                <MdAccountBalanceWallet className="text-blue-300 text-base" />
+                                <span className="text-blue-200 text-[9px] font-bold uppercase tracking-widest">Available</span>
+                            </div>
+                            <div className="text-xl font-black">{formatCurrency(remainingLimit)}</div>
                         </div>
-                    )}
+                        <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-3 text-white text-left">
+                            <div className="flex items-center gap-2 mb-0.5">
+                                <MdTrendingUp className="text-indigo-300 text-base" />
+                                <span className="text-blue-200 text-[9px] font-bold uppercase tracking-widest">Profile</span>
+                            </div>
+                            <div className="text-xs font-black text-emerald-400 uppercase">
+                                {verificationStatus === "approved" ? "Verified" : "Action Required"}
+                            </div>
+                        </div>
+                    </motion.div>
                 </div>
             </div>
 
-            <footer className="py-10 text-center text-gray-500 text-sm border-t border-gray-200">
-                © {new Date().getFullYear()} CrediScore • RBI Guidelines Compliant
-            </footer>
+            {/* Content Section */}
+            <div className="max-w-7xl mx-auto px-6 -mt-8 pb-4 relative z-20">
+                {/* Search Bar - Slimmer */}
+                <div className="bg-white rounded-xl shadow-lg p-2.5 mb-6 flex flex-col md:flex-row gap-2.5 items-center border border-slate-100">
+                    <div className="relative flex-1 w-full">
+                        <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg" />
+                        <input 
+                            type="text" 
+                            placeholder="Search loan types..."
+                            className="w-full pl-10 pr-4 py-2 bg-slate-50 rounded-lg border-none text-xs font-medium focus:ring-1 focus:ring-blue-500 outline-none transition"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    <select 
+                        className="w-full md:w-40 px-3 py-2 bg-slate-50 rounded-lg border-none text-xs font-bold focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer"
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                    >
+                        <option value="default">Sort By</option>
+                        <option value="recommended">Recommended</option>
+                        <option value="rate-low">Interest Rate</option>
+                        <option value="amount-high">Max Amount</option>
+                    </select>
+                </div>
+
+                {!isEligible && (
+                    <motion.div 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="mb-6"
+                    >
+                        {verificationStatus !== "approved" ? (
+                            <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 flex items-center gap-3">
+                                <MdWarning className="text-xl text-amber-600" />
+                                <div className="flex-1">
+                                    <h3 className="text-xs font-black text-amber-900 uppercase tracking-tight">Verification Required</h3>
+                                    <p className="text-[10px] text-amber-800">Complete KYC to unlock full borrowing limits.</p>
+                                </div>
+                                <button 
+                                    onClick={() => navigate("/verify-income")}
+                                    className="bg-amber-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase hover:bg-amber-700 transition"
+                                >
+                                    Verify
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="bg-red-50 border border-red-100 rounded-xl p-3 flex items-center gap-3">
+                                <MdBlock className="text-xl text-red-600" />
+                                <p className="text-[10px] font-black text-red-900 uppercase">Limit Exhausted. Please repay active loans.</p>
+                            </div>
+                        )}
+                    </motion.div>
+                )}
+
+                {/* Schemes Grid - Compact Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <AnimatePresence mode="popLayout">
+                        {filteredAndSortedSchemes.map((scheme, idx) => {
+                            const maxAmt = getMaxAmount(scheme);
+                            const rate = getInterestRate(scheme);
+                            const currentSchemeRecommended = isRecommended(scheme) && isEligible;
+                            const existingRequest = myApplications.find(
+                                (app) => app.loanType === scheme.title && app.requestStatus === "pending"
+                            );
+
+                            const [minTenure] = scheme.tenure.split("-").map((s) => parseInt(s));
+                            const monthlyRate = rate / 12 / 100;
+                            const minEMI = Math.round(
+                                maxAmt > 0 ? (maxAmt * monthlyRate * Math.pow(1 + monthlyRate, minTenure)) / (Math.pow(1 + monthlyRate, minTenure) - 1) : 0
+                            );
+
+                            return (
+                                <motion.div
+                                    layout
+                                    key={scheme.id}
+                                    initial={{ opacity: 0, scale: 0.98 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.98 }}
+                                    transition={{ duration: 0.2, delay: idx * 0.03 }}
+                                    className={`group relative bg-white rounded-2xl p-5 border transition-all duration-300 hover:shadow-xl ${
+                                        currentSchemeRecommended ? "border-emerald-200 ring-1 ring-emerald-50" : "border-slate-100"
+                                    }`}
+                                >
+                                    {currentSchemeRecommended && (
+                                        <div className="absolute -top-2 left-5 bg-emerald-500 text-white px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest shadow-md">
+                                            Best Match
+                                        </div>
+                                    )}
+
+                                    <div className="flex justify-between items-start mb-3">
+                                        <div className={`p-2 rounded-lg ${currentSchemeRecommended ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"}`}>
+                                            <GiReceiveMoney className="text-lg" />
+                                        </div>
+                                        <span className="text-[8px] font-black text-slate-400 uppercase bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">
+                                            {scheme.tag}
+                                        </span>
+                                    </div>
+
+                                    <h3 className="text-base font-black text-slate-800 mb-0.5">{scheme.title}</h3>
+                                    <p className="text-slate-500 text-[11px] mb-4 h-8 line-clamp-2 leading-tight">{scheme.description}</p>
+
+                                    <div className="space-y-2.5 mb-5">
+                                        <div className="flex justify-between items-end border-b border-slate-50 pb-1.5">
+                                            <div>
+                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Max Amount</p>
+                                                <p className="text-lg font-black text-slate-900">{formatCurrency(maxAmt)}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Interest</p>
+                                                <p className="text-base font-black text-emerald-600">{rate}% <span className="text-[9px] text-slate-400 font-medium">p.a.</span></p>
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <div>
+                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Tenure</p>
+                                                <p className="text-[11px] font-black text-slate-700">{scheme.tenure} Mo</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Monthly</p>
+                                                <p className="text-[11px] font-black text-slate-700">₹{minEMI.toLocaleString()}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="relative">
+                                        {existingRequest ? (
+                                            <div className="w-full py-2 rounded-lg bg-amber-50 text-amber-600 text-[10px] font-black uppercase flex items-center justify-center gap-2 border border-amber-100">
+                                                <MdHourglassEmpty className="animate-spin" />
+                                                Pending Review
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleApply(scheme)}
+                                                disabled={!isEligible}
+                                                className={`w-full py-2.5 rounded-lg font-black text-[11px] uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                                                    isEligible
+                                                        ? "bg-slate-900 text-white hover:bg-blue-600 shadow-md active:scale-95"
+                                                        : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                                                }`}
+                                            >
+                                                {isEligible ? (
+                                                    <>
+                                                        Apply Now
+                                                        <MdArrowForward size={14} className="group-hover:translate-x-1 transition-transform" />
+                                                    </>
+                                                ) : "Not Eligible"}
+                                            </button>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+                    </AnimatePresence>
+                </div>
+            </div>
+
         </div>
     );
 }
